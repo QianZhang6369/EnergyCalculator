@@ -82,9 +82,18 @@ export type SystemLayoutId =
   | 'chiller-3way-fc'
   | 'tems';
 
+/** Air-side distribution topology chosen in step 4. */
+export type AirSystemId =
+  | 'ahu'
+  | 'ahu-wheel'
+  | 'ahu-fcu'
+  | 'ahu-wheel-fcu';
+
 /** Step 4 */
 export interface AirWaterSystem {
   layout: SystemLayoutId | null;
+  /** Air-side distribution; null until one is picked. */
+  airSystem: AirSystemId | null;
   parameters: Record<string, string>;
 }
 

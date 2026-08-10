@@ -633,6 +633,11 @@
   max-width: 100%;
 }
 
+/* Schematic expanded under its selected row in a configuration list. */
+.schematic-frame.is-inline {
+  margin: 10px 14px 14px;
+}
+
 .sch-seawater {
   stroke: #6f8fa8;
   stroke-width: 3;

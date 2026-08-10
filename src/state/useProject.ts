@@ -9,7 +9,7 @@ const emptyProject = (): ProjectData => ({
   vesselId: null,
   weather: { waypoints: [], intervalHours: 3, series: [] },
   design: designParameterDefaults(),
-  system: { layout: null, parameters: {} },
+  system: { layout: null, airSystem: null, parameters: {} },
 });
 
 const load = (): ProjectData => {

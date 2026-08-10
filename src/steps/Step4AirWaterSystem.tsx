@@ -4,6 +4,7 @@ import {
   getLayout,
   systemDefaults,
 } from '../data/systems';
+import { AIR_SYSTEMS } from '../data/airSystems';
 import { CHILLERS, PUMPS } from '../data/equipment';
 import ParameterFields from '../components/ParameterFields';
 import EquipmentSelect from '../components/EquipmentSelect';
@@ -21,6 +22,7 @@ export default function Step4AirWaterSystem({ system, onChange }: Props) {
   const selectLayout = (id: SystemLayoutId) => {
     // Keep values the user already typed, fill in the new configuration's defaults.
     onChange({
+      ...system,
       layout: id,
       parameters: { ...systemDefaults(id), ...system.parameters },
     });
@@ -72,6 +74,15 @@ export default function Step4AirWaterSystem({ system, onChange }: Props) {
                           ✓
                         </span>
                       </button>
+                      {isSelected && (
+                        <div
+                          className={`schematic-frame is-inline${
+                            option.id === 'tems' ? ' is-wide' : ''
+                          }`}
+                        >
+                          <SystemSchematic layout={option.id} />
+                        </div>
+                      )}
                     </li>
                   );
                 })}
@@ -84,12 +95,36 @@ export default function Step4AirWaterSystem({ system, onChange }: Props) {
       {layout && (
         <>
           <section className="panel">
-            <h3 className="panel-title">{layout.name}</h3>
-            <div
-              className={`schematic-frame${layout.id === 'tems' ? ' is-wide' : ''}`}
-            >
-              <SystemSchematic layout={layout.id} />
-            </div>
+            <h3 className="panel-title">Air distribution</h3>
+            <p className="panel-text">
+              How the conditioned air reaches the spaces. The energy wheel recovers
+              exhaust heat and cold into the supply stream; the fan-coil variants
+              leave part of the load to local units.
+            </p>
+            <ul className="library-list" role="radiogroup" aria-label="Air distribution">
+              {AIR_SYSTEMS.map((option) => {
+                const isSelected = option.id === system.airSystem;
+                return (
+                  <li key={option.id}>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      className={`library-row${isSelected ? ' is-selected' : ''}`}
+                      onClick={() => onChange({ ...system, airSystem: option.id })}
+                    >
+                      <span className="library-row-main">
+                        <span className="library-row-name">{option.name}</span>
+                        <span className="library-row-tagline">{option.tagline}</span>
+                      </span>
+                      <span className="library-row-check" aria-hidden="true">
+                        ✓
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           </section>
 
           <section className="panel">
