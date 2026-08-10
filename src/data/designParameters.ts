@@ -21,18 +21,39 @@ export interface ParamGroup {
   title: string;
   description: string;
   source: 'vessel' | 'user';
+  /**
+   * How the group responds to the vessel size scale in step 1.
+   *
+   * `scales` — extensive quantities: areas, volumes, counts. They grow with the
+   * vessel.
+   * `fixed`  — intensive properties: U-values, W/m², W/person. Properties of how
+   * the vessel is built and fitted out, not of how big it is, so a larger vessel
+   * of the same type keeps them.
+   *
+   * Groups are deliberately all-one-or-all-the-other. A group containing both
+   * needs two contradictory-looking badges, which reads as a mistake.
+   */
+  scaling?: 'scales' | 'fixed';
   fields: ParamField[];
 }
 
 export const DESIGN_PARAMETER_GROUPS: ParamGroup[] = [
   {
     id: 'geometry',
-    title: 'Building geometry',
+    title: 'Building geometry & occupancy',
     description:
-      'Conditioned spaces and the boundary areas heat passes through. Derived from the vessel’s principal dimensions.',
+      'The quantities that make up the vessel: conditioned spaces, the boundary areas heat passes through, and the number of people aboard. Every value here grows with the size scale.',
     source: 'vessel',
+    scaling: 'scales',
     fields: [
       { key: 'conditionedArea', label: 'Conditioned floor area', unit: 'm²', defaultValue: '1800' },
+      {
+        key: 'personsOnBoard',
+        label: 'Persons on board',
+        unit: 'pers',
+        defaultValue: '215',
+        hint: 'Scales with the vessel, holding its own occupant density constant.',
+      },
       { key: 'conditionedVolume', label: 'Conditioned volume', unit: 'm³', defaultValue: '4680' },
       { key: 'numberOfDecks', label: 'Conditioned decks', unit: '–', defaultValue: '4' },
       {
@@ -57,8 +78,9 @@ export const DESIGN_PARAMETER_GROUPS: ParamGroup[] = [
     id: 'envelope',
     title: 'Thermal envelope',
     description:
-      'Heat transfer coefficients of each boundary, plus the design solar input through glazing.',
+      'How the vessel is built and insulated. None of these change with the size scale — a larger vessel of the same type is built the same way.',
     source: 'vessel',
+    scaling: 'fixed',
     fields: [
       { key: 'uBulkhead', label: 'U-value outer bulkhead', unit: 'W/m²K', defaultValue: '0.9' },
       { key: 'uDeck', label: 'U-value exposed deck', unit: 'W/m²K', defaultValue: '1.1' },
@@ -77,10 +99,11 @@ export const DESIGN_PARAMETER_GROUPS: ParamGroup[] = [
   {
     id: 'internal',
     title: 'Internal gains',
-    description: 'Heat released inside the conditioned spaces by people, lighting and equipment.',
+    description:
+      'How much heat each person, and each square metre, gives off. These rates are set by the vessel type and do not change with size — but the total gain still grows, because the area and person count above do.',
     source: 'vessel',
+    scaling: 'fixed',
     fields: [
-      { key: 'personsOnBoard', label: 'Persons on board', unit: 'pers', defaultValue: '215' },
       { key: 'sensiblePerPerson', label: 'Sensible heat per person', unit: 'W/pers', defaultValue: '75' },
       {
         key: 'occupancyFactor',

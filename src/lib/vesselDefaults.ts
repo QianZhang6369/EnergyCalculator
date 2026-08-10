@@ -75,6 +75,37 @@ const round = (v: number, d = 0) => {
 };
 
 /**
+ * How far the conditioned area may be scaled from the vessel's own figure.
+ *
+ * Not an arbitrary restriction: the derivation assumes a deck height, a glazing
+ * fraction and a plausible deckhouse shape for the vessel's category. Outside
+ * this range the arithmetic stays self-consistent but stops describing anything
+ * resembling that vessel.
+ */
+export const AREA_SCALE_MIN = 0.5;
+export const AREA_SCALE_MAX = 2;
+export const AREA_SCALE_STEP = 0.05;
+
+/** The vessel's own conditioned area — the size the scale knob defaults to. */
+export function referenceAreaFor(vessel: Vessel): number {
+  const { loa = 100, beam = 18, conditionedArea } = vessel.specs;
+  return conditionedArea ?? loa * beam * 0.8;
+}
+
+export function areaBoundsFor(vessel: Vessel): { min: number; max: number } {
+  const reference = referenceAreaFor(vessel);
+  return {
+    min: Math.round(reference * AREA_SCALE_MIN),
+    max: Math.round(reference * AREA_SCALE_MAX),
+  };
+}
+
+export function clampArea(vessel: Vessel, area: number): number {
+  const { min, max } = areaBoundsFor(vessel);
+  return Math.min(max, Math.max(min, area));
+}
+
+/**
  * Values for the three vessel-sourced groups in step 3, keyed by parameter key.
  *
  * Geometry model: the conditioned volume is treated as a block of `decks`
@@ -82,12 +113,23 @@ const round = (v: number, d = 0) => {
  * The block's perimeter gives the exposed bulkhead area, its footprint gives the
  * exposed (weather) deck area.
  */
-export function designDefaultsFor(vessel: Vessel): Record<string, string> {
+export function designDefaultsFor(
+  vessel: Vessel,
+  areaOverride?: number,
+): Record<string, string> {
   const t = TRAITS[vessel.category];
-  const { loa = 100, beam = 18, conditionedArea, passengers = 0, crew = 0 } = vessel.specs;
+  const { loa = 100, beam = 18, passengers = 0, crew = 0 } = vessel.specs;
 
-  const area = conditionedArea ?? loa * beam * 0.8;
-  const persons = passengers + crew;
+  const reference = referenceAreaFor(vessel);
+  const area =
+    areaOverride !== undefined && Number.isFinite(areaOverride) && areaOverride > 0
+      ? clampArea(vessel, areaOverride)
+      : reference;
+
+  // Persons scale with the vessel, holding its own occupant density constant —
+  // otherwise a vessel twice the size carries the same crew, and ventilation and
+  // occupant gains stay flat while the envelope grows.
+  const persons = Math.round(((passengers + crew) / reference) * area);
 
   // Deck count: enough storeys that a deck's footprint fits inside the hull.
   const maxFootprint = loa * beam * 0.72;

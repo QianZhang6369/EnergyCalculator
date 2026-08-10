@@ -8,22 +8,32 @@ import {
   specSummary,
 } from '../data/vessels';
 import VesselFigure from '../components/figures/VesselFigure';
-import type { VesselCategory } from '../types';
+import VesselSizing from '../components/VesselSizing';
+import ParameterFields from '../components/ParameterFields';
+import { DESIGN_PARAMETER_GROUPS } from '../data/designParameters';
+import type { DesignParameters, VesselCategory } from '../types';
 
 interface Props {
   vesselId: string | null;
   projectName: string;
+  design: DesignParameters;
   onSelect: (id: string) => void;
   onProjectNameChange: (name: string) => void;
+  onDesignChange: (design: DesignParameters) => void;
 }
 
 type Filter = 'All' | VesselCategory;
 
+/** Shown read-only under the selected vessel; all derived from its size. */
+const VESSEL_GROUPS = DESIGN_PARAMETER_GROUPS.filter((g) => g.source === 'vessel');
+
 export default function Step1VesselType({
   vesselId,
   projectName,
+  design,
   onSelect,
   onProjectNameChange,
+  onDesignChange,
 }: Props) {
   const selected = getVessel(vesselId);
   const [query, setQuery] = useState('');
@@ -203,6 +213,38 @@ export default function Step1VesselType({
             ))}
           </dl>
         </section>
+      )}
+
+      {selected && (
+        <>
+          <VesselSizing vessel={selected} design={design} onChange={onDesignChange} />
+
+          {VESSEL_GROUPS.map((group) => (
+            <section className="panel panel-vessel" key={group.id}>
+              <h3 className="panel-title">
+                {group.title}
+                {group.scaling === 'scales' ? (
+                  <span className="tag">Scales with size</span>
+                ) : (
+                  <span className="tag tag-muted">Fixed by vessel type</span>
+                )}
+              </h3>
+              <p className="panel-text">{group.description}</p>
+              <ParameterFields
+                fields={group.fields}
+                values={design}
+                onChange={() => {}}
+                readOnly
+              />
+            </section>
+          ))}
+
+          <p className="callout callout-warn">
+            These are estimates derived from the vessel's principal dimensions and
+            its category, not a real general arrangement or insulation schedule.
+            Check them before the results are relied on.
+          </p>
+        </>
       )}
     </div>
   );

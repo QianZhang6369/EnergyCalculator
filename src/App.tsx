@@ -110,6 +110,8 @@ export default function App() {
                 })
               }
               onProjectNameChange={(projectName) => update({ projectName })}
+              design={project.design}
+              onDesignChange={(design) => update({ design })}
             />
           )}
           {step === 2 && (
@@ -125,7 +127,6 @@ export default function App() {
           {step === 3 && (
             <Step3DesignParameters
               design={project.design}
-              vessel={vessel}
               onChange={(design) => update({ design })}
             />
           )}
