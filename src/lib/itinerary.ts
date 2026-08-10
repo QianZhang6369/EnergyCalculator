@@ -14,12 +14,43 @@ export function distanceNm(a: Waypoint, b: Waypoint): number {
   return 2 * EARTH_RADIUS_NM * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
-/** Hours between two `datetime-local` strings, or null if either is unset/invalid. */
+/**
+ * Day-month-hour stamps (`MM-DDTHH:00`) are anchored to a fixed reference year
+ * so durations can be computed without the user ever picking a year. 2000 is a
+ * leap year, so 02-29 is representable.
+ */
+const ANCHOR_YEAR = 2000;
+
+const MONTH_DAY_HOUR = /^(\d{2})-(\d{2})T(\d{2}):00$/;
+
+/**
+ * Timestamp in milliseconds for arithmetic. Accepts the `MM-DDTHH:00` format,
+ * or a full ISO timestamp (legacy saved projects).
+ */
+export function parseStamp(stamp: string): number | null {
+  if (!stamp) return null;
+  const m = MONTH_DAY_HOUR.exec(stamp);
+  if (m) {
+    const month = Number(m[1]);
+    const day = Number(m[2]);
+    const hour = Number(m[3]);
+    const date = new Date(ANCHOR_YEAR, month - 1, day, hour);
+    // Reject rolled-over dates like 02-30 or 13-40 rather than silently shift.
+    const valid =
+      date.getFullYear() === ANCHOR_YEAR &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day;
+    return valid ? date.getTime() : null;
+  }
+  const t = new Date(stamp).getTime();
+  return Number.isNaN(t) ? null : t;
+}
+
+/** Hours between two stop-time stamps, or null if either is unset/invalid. */
 export function hoursBetween(from: string, to: string): number | null {
-  if (!from || !to) return null;
-  const a = new Date(from).getTime();
-  const b = new Date(to).getTime();
-  if (Number.isNaN(a) || Number.isNaN(b)) return null;
+  const a = parseStamp(from);
+  const b = parseStamp(to);
+  if (a === null || b === null) return null;
   return (b - a) / 3_600_000;
 }
 
@@ -61,6 +92,18 @@ export function issues(waypoints: Waypoint[]): ItineraryIssue[] {
   const found: ItineraryIssue[] = [];
 
   waypoints.forEach((wp, i) => {
+    if (wp.arrival && parseStamp(wp.arrival) === null) {
+      found.push({
+        waypointId: wp.id,
+        message: 'Arrival must be MM-DDTHH:00, e.g. 07-15T08:00.',
+      });
+    }
+    if (wp.departure && parseStamp(wp.departure) === null) {
+      found.push({
+        waypointId: wp.id,
+        message: 'Departure must be MM-DDTHH:00, e.g. 07-15T08:00.',
+      });
+    }
     const stay = hoursBetween(wp.arrival, wp.departure);
     if (stay !== null && stay < 0) {
       found.push({ waypointId: wp.id, message: 'Departure is before arrival.' });

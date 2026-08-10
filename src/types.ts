@@ -58,7 +58,7 @@ export interface Waypoint {
   name: string;
   lat: number;
   lon: number;
-  /** Local datetime as `YYYY-MM-DDTHH:mm`, or '' when not set. */
+  /** Day-month-hour as `MM-DDTHH:00`, repeating annually, or '' when not set. */
   arrival: string;
   departure: string;
 }

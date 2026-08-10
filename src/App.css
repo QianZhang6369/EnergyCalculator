@@ -904,6 +904,16 @@
   color: var(--warm);
 }
 
+/* A day-month field beside an hourly time field, e.g. a stop's arrival. */
+.time-inputs {
+  display: flex;
+  gap: 8px;
+}
+
+.time-inputs .field-input {
+  min-width: 0;
+}
+
 /* ---------- vessel size scale ---------- */
 
 .scale-control {

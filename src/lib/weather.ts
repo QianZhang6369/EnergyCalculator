@@ -1,4 +1,5 @@
 import type { Waypoint, WeatherPoint } from '../types';
+import { parseStamp } from './itinerary';
 
 /**
  * Placeholder weather source.
@@ -36,11 +37,11 @@ const round = (v: number, d = 1) => {
   return Math.round(v * f) / f;
 };
 
-const timeOf = (stamp: string): number | null => {
-  if (!stamp) return null;
-  const t = new Date(stamp).getTime();
-  return Number.isNaN(t) ? null : t;
-};
+/**
+ * Day-month-hour stamps from step 2 carry no year; `parseStamp` anchors them
+ * to a fixed reference year so they still resolve to real instants here.
+ */
+const timeOf = parseStamp;
 
 /** First and last instant the itinerary covers, or null if times are missing. */
 export function timeRange(waypoints: Waypoint[]): { start: number; end: number } | null {
