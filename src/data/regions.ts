@@ -48,7 +48,6 @@ const unsorted: Region[] = [
   { id: 'mediterranean', name: 'Mediterranean', code: 'MED', lats: [41.4, 43.3, 44.4, 37.9], lon: 10, color: '#eb6834' },
   { id: 'newengland', name: 'New England & Canada', code: 'NEC', lats: [42.4, 44.7, 46.8], lon: -68, color: '#8a5a2b' },
   { id: 'nordic', name: 'Nordic coastal', code: 'NOR', lats: [60.4, 62.5, 63.4, 69.7], lon: 10, color: '#2a78d6', hourly: bergen2025 },
-  { id: 'northsea', name: 'North Sea & British Isles', code: 'NSE', lats: [50.9, 52.5, 53.5, 56], lon: 3, color: '#56708a' },
   { id: 'redsea', name: 'Red Sea', code: 'RED', lats: [21.5, 29.5, 26.7], lon: 36, color: '#a83232' },
   { id: 'southamerica', name: 'South America', code: 'SAM', lats: [-34.6, -22.9, -34.9], lon: -52, color: '#7a8f1f' },
   { id: 'southpacific', name: 'South Pacific', code: 'SPA', lats: [-17.5, -18.1, -22.3], lon: -160, color: '#36c2d6' },
@@ -128,7 +127,7 @@ export const regionsInPlan = (plan: AnnualPlan): RegionId[] =>
 
 /**
  * Colour of each region in the plan. A region keeps its own colour whatever
- * else is in the plan, so editing one month never recolours another. Twenty
+ * else is in the plan, so editing one month never recolours another. Nineteen
  * colours cannot all be told apart at a glance, so a colour never stands
  * alone: every use carries the region name.
  */
