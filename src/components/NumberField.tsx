@@ -5,6 +5,7 @@ interface Props {
   onChange: (value: number) => void;
   step?: number;
   min?: number;
+  disabled?: boolean;
   'aria-label'?: string;
 }
 

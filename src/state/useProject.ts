@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ProjectData } from '../types';
 import { designParameterDefaults } from '../data/designParameters';
 import { DEFAULT_PLAN, normalizePlan } from '../data/regions';
+import { emptyAirSetup, normalizeAirSetup } from '../lib/airSystems';
 import { normalizeZones, sovSampleZones } from '../lib/zones';
 
 const STORAGE_KEY = 'energy-calculator.project';
@@ -13,7 +14,8 @@ const emptyProject = (): ProjectData => ({
   zones: sovSampleZones(),
   weather: { plan: [...DEFAULT_PLAN] },
   design: designParameterDefaults(),
-  system: { layout: null, airSystem: null, parameters: {} },
+  air: emptyAirSetup(),
+  system: { layout: null, parameters: {} },
 });
 
 const load = (): ProjectData => {
@@ -29,6 +31,7 @@ const load = (): ProjectData => {
       // Rebuilt rather than merged: projects saved before the annual plan carry
       // an itinerary here, which is dropped.
       zones: normalizeZones(stored.zones),
+      air: normalizeAirSetup(stored.air),
       weather: { plan: normalizePlan(stored.weather?.plan) },
       design: { ...base.design, ...stored.design },
       system: { ...base.system, ...stored.system },

@@ -123,6 +123,9 @@ export default function App() {
             <Step4AirWaterSystem
               system={project.system}
               onChange={(system) => update({ system })}
+              zones={project.zones}
+              air={project.air}
+              onAirChange={(change) => update((p) => ({ air: change(p.air) }))}
             />
           )}
           {step === RESULTS_STEP && (
