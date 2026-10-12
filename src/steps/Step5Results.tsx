@@ -282,11 +282,11 @@ export default function Step5Results({ zones, air, hvac, plan }: Props) {
                   </table>
                 </div>
                 <p className="res-note">
-                  Terminal heating is split by the heating source set in step 4: electricity,
+                  Terminal heating is split by the heating source set in step 3: electricity,
                   or water (waste heat or heat pump). Overcooling &amp; reheat = the terminal
                   heats while the room has no net heat loss or the AHU cooling coil is on. The
                   total for hours counts hours when at least one room group qualifies (not a
-                  sum). Terminal fan (step 4): design power = terminal design capacity × fan
+                  sum). Terminal fan (step 3): design power = terminal design capacity × fan
                   W/kW; constant fans run at it every hour, on-off fans follow the terminal's
                   part load.
                 </p>
@@ -372,7 +372,7 @@ export default function Step5Results({ zones, air, hvac, plan }: Props) {
                     enthalpy) and pre-cooling (hours it lowers it) are each split into sensible
                     + latent. In heating the sensible part replaces coil heating and the latent
                     part is moisture added to the fresh air; in pre-cooling the latent part is
-                    moisture removed. Fans: SFP or pressure-drop method (step 3), constant
+                    moisture removed. Fans: SFP or pressure-drop method (step 4), constant
                     airflow for all {result.hours} h; terminal fans are in the room group table.
                   </p>
                 </section>
@@ -415,7 +415,7 @@ export default function Step5Results({ zones, air, hvac, plan }: Props) {
                 </div>
                 <p className="res-note">
                   Chiller cooling load = AHU cooling coils + water-cooled terminal cooling
-                  (FCU). Electricity consumption = cooling load ÷ COP; the COP is set in step 3.
+                  (FCU). Electricity consumption = cooling load ÷ COP; the COP is set in step 4.
                 </p>
               </section>
             </>
@@ -524,7 +524,7 @@ export default function Step5Results({ zones, air, hvac, plan }: Props) {
                 <ul className="res-notes">
                   <li>
                     Barometric pressure, ρ·cp, reference irradiance and heat per person are set
-                    in step 3 (Basic parameters); room set-point &amp; humidity are per room
+                    in step 4 (Basic parameters); room set-point &amp; humidity are per room
                     group; fan ΔT and wheel return ratio are per AHU.
                   </li>
                   <li>
@@ -532,9 +532,9 @@ export default function Step5Results({ zones, air, hvac, plan }: Props) {
                     (radiation ÷ reference irradiance).
                   </li>
                   <li>
-                    Room set-point is per room group (step 3); the supply-air temperature ramps
+                    Room set-point is per room group (step 4); the supply-air temperature ramps
                     with outdoor temperature between the AHU's winter and summer set-points;
-                    fresh-air quantity is the step 4 method.
+                    fresh-air quantity is the step 3 method.
                   </li>
                   <li>
                     CBU-EL duty = max(−(group sensible + ventilation cooling), 0) — a CBU can

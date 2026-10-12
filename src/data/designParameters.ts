@@ -1,5 +1,5 @@
 /**
- * Step 3 parameters, grouped for the heat-balance calculation.
+ * Step 4 parameters, grouped for the heat-balance calculation.
  *
  * `source: 'vessel'` marks a group that is filled in from the vessel selected in
  * step 1 — the user can still override any value. `source: 'user'` is theirs to
@@ -129,7 +129,7 @@ export const DESIGN_PARAMETER_GROUPS: ParamGroup[] = [
   {
     id: 'water',
     title: 'Chilled & heating water',
-    description: 'Water-side temperatures used later by the plant model in step 4.',
+    description: 'Water-side temperatures used later by the plant model in step 3.',
     source: 'user',
     fields: [
       { key: 'chwSupplyTemp', label: 'Chilled water supply', unit: '°C', defaultValue: '7' },
@@ -141,9 +141,9 @@ export const DESIGN_PARAMETER_GROUPS: ParamGroup[] = [
 ];
 
 /**
- * Ventilation inputs. No longer shown on step 3, but the heat balance still
+ * Ventilation inputs. No longer shown on step 4, but the heat balance still
  * needs them, so their defaults are kept here and folded into the project data.
- * Move these fields into whichever step should own them (step 4 is the natural
+ * Move these fields into whichever step should own them (step 3 is the natural
  * home, being the air-side system) rather than deleting them.
  */
 export const VENTILATION_FIELDS: ParamField[] = [

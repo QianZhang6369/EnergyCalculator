@@ -1,7 +1,7 @@
 import { resolveZone, type Zone } from './zones';
 
 /**
- * Step 4 — air system configuration.
+ * Step 3 — air system configuration.
  *
  * The air handling units, and for each room group its fresh-air source,
  * terminal unit, fresh-air method, occupancy profile and lighting.
@@ -173,7 +173,7 @@ export function defaultZoneAirConfig(): ZoneAirConfig {
   };
 }
 
-/** Step 4 — the air side of the project. */
+/** Step 3 — the air side of the project. */
 export interface AirSetup {
   ahus: Ahu[];
   /** Per room group, keyed by the group's `uid`. Missing groups use the defaults. */

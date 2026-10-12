@@ -10,7 +10,7 @@ interface Props {
   onHvacChange: (update: (hvac: HvacDesign) => HvacDesign) => void;
 }
 
-export default function Step3DesignParameters({ zones, air, hvac, onHvacChange }: Props) {
+export default function Step4DesignParameters({ zones, air, hvac, onHvacChange }: Props) {
   return (
     <div className="step-page">
       <header className="step-header">

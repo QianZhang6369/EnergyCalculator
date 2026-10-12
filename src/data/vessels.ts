@@ -19,7 +19,7 @@ export const VESSEL_CATEGORIES: VesselCategory[] = ['Passenger', 'Offshore', 'Sp
  * Display order and units for the key information grid.
  *
  * `beam` is deliberately absent: it is not shown to the user, but each vessel
- * still carries it because `lib/vesselDefaults.ts` derives the step 3 building
+ * still carries it because `lib/vesselDefaults.ts` derives the step 4 building
  * geometry from length × beam. Do not delete it from the vessel specs.
  */
 export const SPEC_ROWS: {

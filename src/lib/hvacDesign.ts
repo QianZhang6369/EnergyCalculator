@@ -2,7 +2,7 @@ import type { CoolingSource, HeatSource } from './airSystems';
 import type { WindowType } from './zones';
 
 /**
- * Step 3 — general design parameters.
+ * Step 4 — general design parameters.
  *
  * Room set-points per room group, the envelope and air properties, the window
  * types, and the operating, fan and chiller parameters of the air handling
@@ -11,7 +11,7 @@ import type { WindowType } from './zones';
  * Ported from EnergyCalculator Light, names included, so its per-group load
  * calculation can follow later without a data migration. Light's weather
  * selection is left out: step 2 owns the weather here. Nothing in this file
- * feeds the results yet, apart from the fan figures shown in step 3 itself.
+ * feeds the results yet, apart from the fan figures shown in step 4 itself.
  */
 
 /** How the AHU fan power is obtained. */
@@ -173,7 +173,7 @@ export function defaultDesignParams(): DesignParams {
   };
 }
 
-/** Step 3 — the design side of the project. */
+/** Step 4 — the design side of the project. */
 export interface HvacDesign {
   params: DesignParams;
   /** Per AHU, keyed by its id. Missing units use the defaults. */
@@ -248,7 +248,7 @@ export function supplySetpointAt(
   return cold + (warm - cold) * ((oat_C - lo) / (hi - lo));
 }
 
-/** What the load calculation reads: step 3's parameters plus step 4's fan sizing. */
+/** What the load calculation reads: step 4's parameters plus step 3's fan sizing. */
 export type LoadDesign = DesignParams & {
   terminalFanPercentile: number;
   terminalFanOversizing: number;

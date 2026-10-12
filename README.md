@@ -14,8 +14,8 @@ npm run build
 |---|------|------|-------|
 | 1 | Vessel type | [Step1VesselType.tsx](src/steps/Step1VesselType.tsx) | Done — 3 vessels with figures |
 | 2 | Weather condition | [Step2WeatherCondition.tsx](src/steps/Step2WeatherCondition.tsx) | Placeholder — free-text notes only |
-| 3 | Design parameters | [Step3DesignParameters.tsx](src/steps/Step3DesignParameters.tsx) | Template — 6 groups, 27 fields |
-| 4 | Air and water system | [Step4AirWaterSystem.tsx](src/steps/Step4AirWaterSystem.tsx) | Done — 2 layouts with schematics |
+| 3 | Air and water system | [Step3AirWaterSystem.tsx](src/steps/Step3AirWaterSystem.tsx) | Done — 2 layouts with schematics |
+| 4 | Design parameters | [Step4DesignParameters.tsx](src/steps/Step4DesignParameters.tsx) | Template — 6 groups, 27 fields |
 
 Wizard input is held in [useProject.ts](src/state/useProject.ts) and persisted to
 `localStorage`, so a page reload does not lose the entered data. Stored values are
