@@ -8,7 +8,7 @@ import Step5Results from './steps/Step5Results';
 import { useProject } from './state/useProject';
 import { getVessel } from './data/vessels';
 import { getLayout } from './data/systems';
-import { designDefaultsFor } from './lib/vesselDefaults';
+import { regionsInPlan } from './data/regions';
 import './App.css';
 
 const STEPS: StepDefinition[] = [
@@ -29,13 +29,10 @@ export default function App() {
   // removed does not count as a valid selection.
   const vessel = getVessel(project.vesselId);
   const layout = getLayout(project.system.layout);
+  const regionCount = regionsInPlan(project.weather.plan).length;
 
-  // Step 1 gates the input steps; results additionally need a system configuration.
-  const reachable = (target: number) => {
-    if (target === 1) return true;
-    if (target === RESULTS_STEP) return vessel !== null && layout !== null;
-    return vessel !== null;
-  };
+  // Step 1 gates every other step.
+  const reachable = (target: number) => target === 1 || vessel !== null;
 
   const canContinue = step === 1 ? vessel !== null : true;
 
@@ -73,11 +70,7 @@ export default function App() {
             <div>
               <dt>Weather</dt>
               <dd>
-                {project.weather.series?.length
-                  ? `${project.weather.series.length} samples`
-                  : project.weather.waypoints?.length
-                    ? `${project.weather.waypoints.length} stops`
-                    : 'Not defined'}
+                {regionCount} region{regionCount === 1 ? '' : 's'}
               </dd>
             </div>
             <div>
@@ -97,50 +90,42 @@ export default function App() {
             <Step1VesselType
               vesselId={project.vesselId}
               projectName={project.projectName}
-              onSelect={(vesselId) =>
-                update((p) => {
-                  const picked = getVessel(vesselId);
-                  // Selecting a vessel refills the vessel-sourced groups in step 3.
-                  return {
-                    vesselId,
-                    design: picked
-                      ? { ...p.design, ...designDefaultsFor(picked) }
-                      : p.design,
-                  };
-                })
-              }
+              onSelect={(vesselId) => update({ vesselId })}
               onProjectNameChange={(projectName) => update({ projectName })}
-              design={project.design}
-              onDesignChange={(design) => update({ design })}
+              zones={project.zones}
+              onZonesChange={(change) => update((p) => ({ zones: change(p.zones) }))}
             />
           )}
           {step === 2 && (
             <Step2WeatherCondition
               weather={project.weather}
-              onChange={(next) =>
-                update((p) => ({
-                  weather: typeof next === 'function' ? next(p.weather) : next,
-                }))
-              }
+              onChange={(weather) => update({ weather })}
             />
           )}
           {step === 3 && (
             <Step3DesignParameters
-              design={project.design}
-              onChange={(design) => update({ design })}
+              zones={project.zones}
+              air={project.air}
+              hvac={project.hvac}
+              onHvacChange={(change) => update((p) => ({ hvac: change(p.hvac) }))}
             />
           )}
           {step === 4 && (
             <Step4AirWaterSystem
               system={project.system}
               onChange={(system) => update({ system })}
+              zones={project.zones}
+              air={project.air}
+              onAirChange={(change) => update((p) => ({ air: change(p.air) }))}
+              reducedOccupancy={project.hvac.params.occupancyReduced}
             />
           )}
           {step === RESULTS_STEP && (
             <Step5Results
-              design={project.design}
-              waypoints={project.weather.waypoints ?? []}
-              layout={project.system.layout}
+              zones={project.zones}
+              air={project.air}
+              hvac={project.hvac}
+              plan={project.weather.plan}
             />
           )}
         </div>
@@ -161,8 +146,6 @@ export default function App() {
             <button
               type="button"
               className="btn btn-primary"
-              disabled={layout === null}
-              title={layout ? undefined : 'Select a system configuration first'}
               onClick={() => go(RESULTS_STEP)}
             >
               Run calculation →

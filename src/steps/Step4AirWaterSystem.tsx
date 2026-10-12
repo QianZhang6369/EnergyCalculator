@@ -4,19 +4,33 @@ import {
   getLayout,
   systemDefaults,
 } from '../data/systems';
-import { AIR_SYSTEMS } from '../data/airSystems';
 import { CHILLERS, PUMPS } from '../data/equipment';
+import AirSystems from '../components/AirSystems';
 import ParameterFields from '../components/ParameterFields';
 import EquipmentSelect from '../components/EquipmentSelect';
 import SystemSchematic from '../components/figures/SystemSchematic';
+import type { AirSetup } from '../lib/airSystems';
+import type { Zone } from '../lib/zones';
 import type { AirWaterSystem, SystemLayoutId } from '../types';
 
 interface Props {
   system: AirWaterSystem;
   onChange: (system: AirWaterSystem) => void;
+  zones: Zone[];
+  air: AirSetup;
+  onAirChange: (update: (air: AirSetup) => AirSetup) => void;
+  /** Step 3 switch that changes what fresh-air method C delivers. */
+  reducedOccupancy: boolean;
 }
 
-export default function Step4AirWaterSystem({ system, onChange }: Props) {
+export default function Step4AirWaterSystem({
+  system,
+  onChange,
+  zones,
+  air,
+  onAirChange,
+  reducedOccupancy,
+}: Props) {
   const layout = getLayout(system.layout);
 
   const selectLayout = (id: SystemLayoutId) => {
@@ -36,10 +50,18 @@ export default function Step4AirWaterSystem({ system, onChange }: Props) {
       <header className="step-header">
         <h2>Air and water system</h2>
         <p>
-          Select the system configuration of the chilled water circuit. The choice drives
-          how pump and compressor energy behave at part load.
+          Define the air handling units and the air system of each room group, then
+          select the configuration of the chilled water circuit, which drives how pump
+          and compressor energy behave at part load.
         </p>
       </header>
+
+      <AirSystems
+        zones={zones}
+        air={air}
+        onChange={onAirChange}
+        reducedOccupancy={reducedOccupancy}
+      />
 
       <section className="panel">
         <h3 className="panel-title">System configuration</h3>
@@ -94,39 +116,6 @@ export default function Step4AirWaterSystem({ system, onChange }: Props) {
 
       {layout && (
         <>
-          <section className="panel">
-            <h3 className="panel-title">Air distribution</h3>
-            <p className="panel-text">
-              How the conditioned air reaches the spaces. The energy wheel recovers
-              exhaust heat and cold into the supply stream; the fan-coil variants
-              leave part of the load to local units.
-            </p>
-            <ul className="library-list" role="radiogroup" aria-label="Air distribution">
-              {AIR_SYSTEMS.map((option) => {
-                const isSelected = option.id === system.airSystem;
-                return (
-                  <li key={option.id}>
-                    <button
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      className={`library-row${isSelected ? ' is-selected' : ''}`}
-                      onClick={() => onChange({ ...system, airSystem: option.id })}
-                    >
-                      <span className="library-row-main">
-                        <span className="library-row-name">{option.name}</span>
-                        <span className="library-row-tagline">{option.tagline}</span>
-                      </span>
-                      <span className="library-row-check" aria-hidden="true">
-                        ✓
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-
           <section className="panel">
             <h3 className="panel-title">Plant parameters</h3>
             <p className="panel-text">

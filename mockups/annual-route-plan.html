@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Annual Route Plan</title>
+<style>
+/* Layout: one content column of app-style panels (annual plan, then year preview), mirroring the calculator's step page. */
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --surface-alt: #f8fafc;
+  --border: #dde3ec;
+  --border-strong: #c3cddc;
+  --grid: #e6ebf2;
+  --text: #16222e;
+  --text-muted: #5c6b7c;
+  --accent: #0f7fa8;
+  --accent-strong: #0b6386;
+  --accent-soft: #e5f3f9;
+  --on-accent: #ffffff;
+  --shadow: 0 1px 2px rgba(16, 34, 51, 0.06), 0 4px 14px rgba(16, 34, 51, 0.06);
+  /* Region colours, given to the regions in the plan in order of first appearance. */
+  --r1: #2a78d6;
+  --r2: #eb6834;
+  --r3: #1baf7a;
+  --r4: #eda100;
+  --r5: #e87ba4;
+  --r6: #008300;
+  --r7: #4a3aa7;
+  --r8: #e34948;
+  --r-extra: #6f7d8c;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1722; --surface: #12222f; --surface-alt: #172b3a; --border: #24394a;
+    --border-strong: #36536b; --grid: #1f3344; --text: #e6eef5; --text-muted: #93a7ba;
+    --accent: #3aa6cf; --accent-strong: #63bde0; --accent-soft: #143448; --on-accent: #06202c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+    --r1: #3987e5; --r2: #d95926; --r3: #199e70; --r4: #c98500; --r5: #d55181;
+    --r6: #008300; --r7: #9085e9; --r8: #e66767; --r-extra: #8796a5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1722; --surface: #12222f; --surface-alt: #172b3a; --border: #24394a;
+  --border-strong: #36536b; --grid: #1f3344; --text: #e6eef5; --text-muted: #93a7ba;
+  --accent: #3aa6cf; --accent-strong: #63bde0; --accent-soft: #143448; --on-accent: #06202c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+  --r1: #3987e5; --r2: #d95926; --r3: #199e70; --r4: #c98500; --r5: #d55181;
+  --r6: #008300; --r7: #9085e9; --r8: #e66767; --r-extra: #8796a5;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-inline: 16px;
+  padding-block: 28px 48px;
+}
+h1, h2, h3, p, ol, ul, dl, dd { margin: 0; }
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+ol, ul { list-style: none; padding: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.page { max-width: 1040px; margin-inline: auto; display: flex; flex-direction: column; gap: 22px; }
+
+/* ---------- header ---------- */
+.eyebrow {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);
+}
+.tag {
+  font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--accent-strong); background: var(--accent-soft); border-radius: 4px; padding: 2px 6px;
+}
+.step-header h1 { font-size: 26px; margin-top: 8px; }
+.lede { color: var(--text-muted); margin-top: 8px; font-size: 14.5px; line-height: 1.55; max-width: 72ch; }
+
+/* ---------- panels ---------- */
+.panel {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 22px 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 18px; min-width: 0;
+}
+.panel-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px 24px; flex-wrap: wrap; }
+.panel-head > div:first-child { min-width: 0; flex: 1 1 340px; }
+.panel-title { font-size: 16px; }
+.panel-text { color: var(--text-muted); font-size: 13.5px; margin-top: 6px; line-height: 1.55; max-width: 70ch; }
+.note { color: var(--text-muted); font-size: 12.5px; }
+.field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.field-input {
+  font-size: 13.5px; padding: 7px 9px; border: 1px solid var(--border-strong); border-radius: 8px;
+  background: var(--surface); color: var(--text); width: 100%; min-width: 0;
+}
+.field-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.swatch { flex: none; width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+
+/* ---------- annual plan ---------- */
+.start { display: flex; flex-direction: column; gap: 5px; flex: 0 1 300px; min-width: 0; }
+
+.months { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 760px) { .months { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.month-tab {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 2px 9px;
+  border-radius: 8px; cursor: pointer; min-width: 0;
+  border: 2px solid transparent;
+  background: color-mix(in srgb, var(--c) 16%, var(--surface));
+  transition: background 0.12s, border-color 0.12s;
+}
+.month-tab:hover { background: color-mix(in srgb, var(--c) 26%, var(--surface)); }
+.month-tab.is-active { border-color: var(--accent); background: color-mix(in srgb, var(--c) 30%, var(--surface)); box-shadow: 0 0 0 3px var(--accent-soft); }
+.month-tab .mon { font-size: 12.5px; color: var(--text-muted); }
+.month-tab.is-active .mon { color: var(--text); font-weight: 600; }
+.month-tab .code { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
+.month-tab .swatch { width: 8px; height: 8px; border-radius: 50%; }
+
+.picker {
+  display: flex; flex-direction: column; gap: 14px; padding: 16px 18px 18px;
+  border: 1px solid var(--accent); border-radius: var(--radius); background: var(--surface-alt);
+}
+.picker-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 24px; }
+.picker-head h3 { font-size: 15px; }
+.metrics { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.metrics dt { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.metrics dd { font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.metrics dd span { font-weight: 400; color: var(--text-muted); font-size: 11.5px; }
+.region-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.region-btn {
+  width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; padding: 10px 12px; min-width: 0;
+  border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); cursor: pointer; font-size: 13.5px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.region-btn:hover { border-color: var(--accent); }
+.region-btn.is-active { background: var(--accent-soft); border-color: var(--accent); font-weight: 600; box-shadow: inset 0 0 0 1px var(--accent); }
+.region-btn .swatch { border-radius: 50%; }
+.region-btn .swatch.is-unused { background: transparent; box-shadow: inset 0 0 0 1.5px var(--border-strong); }
+
+.regions { display: flex; flex-wrap: wrap; gap: 8px; }
+.regions li {
+  display: flex; align-items: center; gap: 7px; padding: 5px 10px; border: 1px solid var(--border);
+  border-radius: 999px; background: var(--surface-alt); font-size: 12.5px;
+}
+.regions .when { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- year preview ---------- */
+.fact-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.fact { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; min-width: 0; }
+.fact dt { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.fact dd { margin-top: 3px; font-size: 14.5px; font-weight: 500; }
+.fact dd.fact-sub { font-size: 12px; font-weight: 400; color: var(--text-muted); margin-top: 1px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--text-muted); align-items: center; }
+.legend li { display: flex; align-items: center; gap: 7px; }
+.key { width: 22px; height: 2px; border-radius: 2px; background: var(--text); flex: none; }
+.key-sea { background: var(--text-muted); opacity: 0.75; }
+
+.chart-wrap { position: relative; min-width: 0; touch-action: pan-y; }
+.chart-wrap svg { display: block; width: 100%; }
+.g-line { stroke: var(--grid); stroke-width: 1; }
+.g-edge { stroke: var(--border-strong); stroke-width: 1; }
+.t-tick { fill: var(--text-muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.t-span { fill: var(--text); font-size: 12px; font-weight: 600; }
+.t-title { fill: var(--text); font-size: 12.5px; font-weight: 600; }
+.t-unit { fill: var(--text-muted); font-size: 11.5px; font-weight: 400; }
+.t-value { fill: var(--text); font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.l-main { fill: none; stroke: var(--text); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.l-sea { fill: none; stroke: var(--text-muted); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; opacity: 0.75; }
+.dot { stroke: var(--surface); stroke-width: 2; }
+.cross { stroke: var(--border-strong); stroke-width: 1; }
+.tip {
+  position: absolute; top: 56px; pointer-events: none; min-width: 190px; padding: 9px 11px;
+  background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: var(--shadow);
+  font-size: 12.5px; display: flex; flex-direction: column; gap: 4px;
+}
+.tip-title { font-weight: 600; }
+.tip-region { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
+.tip dl { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+.tip dl div { display: flex; justify-content: space-between; gap: 14px; }
+.tip dt { color: var(--text-muted); }
+.tip dd { font-variant-numeric: tabular-nums; font-weight: 500; }
+
+@media (max-width: 520px) { .panel { padding: 18px 16px; } }
+</style>
+</head>
+<body style="margin:0">
+<div class="page">
+  <header class="step-header">
+    <p class="eyebrow">Marine HVAC energy calculator · Step 2 of 5 <span class="tag">Design mockup</span></p>
+    <h1>Weather condition</h1>
+    <p class="lede">Plan where the vessel operates through the year. Each month has one main operating region, and the weather for that month comes from that region.</p>
+  </header>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Annual plan</h2>
+        <p class="panel-text">Select a month, then choose its main operating region.</p>
+      </div>
+      <div class="start">
+        <label class="field-label" for="start-from">Start from</label>
+        <select class="field-input" id="start-from">
+          <option value="">Your own plan</option>
+          <optgroup label="Seasonal patterns">
+            <option value="example" selected>Example cruise year</option>
+            <option value="car-med">Caribbean winter, Mediterranean summer</option>
+            <option value="can-bal">Canaries winter, Baltic summer</option>
+            <option value="aus-ala">Australia winter, Alaska summer</option>
+          </optgroup>
+          <optgroup label="One region all year" id="start-regions"></optgroup>
+        </select>
+      </div>
+    </div>
+    <ol class="months" id="months" aria-label="Month"></ol>
+    <div class="picker" id="picker"></div>
+    <ul class="regions" id="regions" aria-label="Regions in this plan"></ul>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Year preview</h2>
+        <p class="panel-text">Monthly mean conditions where the ship is. The coloured band, dots and bars show which region is active.</p>
+      </div>
+      <ul class="legend" aria-label="Temperature series">
+        <li><span class="key"></span>Air temperature</li>
+        <li><span class="key key-sea"></span>Seawater temperature</li>
+      </ul>
+    </div>
+    <dl class="fact-list" id="facts"></dl>
+    <div class="chart-wrap" id="chart-wrap">
+      <svg id="chart" role="img" aria-label="Monthly mean temperature, relative humidity and solar radiation through the year, with the active region shown above each month"></svg>
+      <div class="tip" id="tip" hidden></div>
+    </div>
+    <p class="note" id="change-note"></p>
+  </section>
+
+  <p class="note">Mockup with example data. Values use the calculator's current formulas, which depend only on latitude and season. That is why warm-water regions read too cool in winter and humidity stays flat within a region.</p>
+</div>
+
+<script>
+(() => {
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const MON = MONTHS.map((m) => m.slice(0, 3));
+  const MID_DAY = [15, 46, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349];
+
+  // Each region is represented by a few latitudes spread across it.
+  const regions = [
+    ['alaska', 'Alaska', 'ALA', [49.3, 55.3, 58.3, 59.5]],
+    ['antarctic', 'Antarctic Peninsula', 'ANT', [-54.8, -60, -64.8]],
+    ['gulf', 'Arabian Gulf', 'GUL', [25.3, 24.5, 25.3, 23.6]],
+    ['arctic', 'Arctic & Svalbard', 'ARC', [69.7, 74, 78.2]],
+    ['ausnz', 'Australia & NZ', 'AUS', [-33.9, -37.8, -42.9, -36.8]],
+    ['baltic', 'Baltic', 'BAL', [55.7, 59.3, 60.2, 59.4]],
+    ['canary', 'Canary Islands', 'CAN', [28.1, 28.5, 32.7, 29]],
+    ['caribbean', 'Caribbean', 'CAR', [25.8, 25, 18.5]],
+    ['eastasia', 'East Asia', 'EAS', [35.5, 35.1, 31.2]],
+    ['hawaii', 'Hawaii', 'HAW', [21.3, 19.7, 20.9]],
+    ['iceland', 'Iceland & Greenland', 'ICE', [64.2, 64.2, 65.7]],
+    ['indian', 'Indian Ocean', 'IND', [-20.2, -4.6, 4.2]],
+    ['mediterranean', 'Mediterranean', 'MED', [41.4, 43.3, 44.4, 37.9]],
+    ['newengland', 'New England & Canada', 'NEC', [42.4, 44.7, 46.8]],
+    ['nordic', 'Nordic coastal', 'NOR', [60.4, 62.5, 63.4, 69.7]],
+    ['northsea', 'North Sea & British Isles', 'NSE', [50.9, 52.5, 53.5, 56]],
+    ['redsea', 'Red Sea', 'RED', [21.5, 29.5, 26.7]],
+    ['southamerica', 'South America', 'SAM', [-34.6, -22.9, -34.9]],
+    ['southpacific', 'South Pacific', 'SPA', [-17.5, -18.1, -22.3]],
+    ['seasia', 'South-East Asia', 'SEA', [1.3, 3, 7.8, 13.1]],
+  ].map(([id, name, code, lats]) => ({ id, name, code, lats, color: 'r-extra' }));
+  regions.sort((a, b) => a.name.localeCompare(b.name));
+
+  const PRESETS = {
+    example: (m) => ['caribbean', 'caribbean', 'caribbean', 'canary', 'mediterranean', 'mediterranean', 'nordic', 'nordic', 'mediterranean', 'mediterranean', 'canary', 'caribbean'][m],
+    'car-med': (m) => (m >= 4 && m <= 9 ? 'mediterranean' : 'caribbean'),
+    'can-bal': (m) => (m >= 4 && m <= 8 ? 'baltic' : 'canary'),
+    'aus-ala': (m) => (m >= 3 && m <= 8 ? 'alaska' : 'ausnz'),
+  };
+
+  let plan = MONTHS.map((_, m) => PRESETS.example(m));
+  let chartGeo = null;
+  let month = 0;
+
+  const $ = (id) => document.getElementById(id);
+  const byId = (id) => regions.find((r) => r.id === id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmt = (v, d = 1) => v.toFixed(d).replace('-', '−');
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+
+  /** Same latitude-and-season climatology the calculator uses today. */
+  function climatology(lat, month) {
+    const absLat = Math.abs(lat);
+    const declination = 23.45 * Math.sin(((month + 1 - 3) / 12) * 2 * Math.PI);
+    const summerness = (lat >= 0 ? declination : -declination) / 23.45;
+    return {
+      air: 29 - 0.45 * absLat + 0.22 * absLat * summerness,
+      sea: clamp(27.5 - 0.38 * absLat + 0.1 * absLat * summerness, -1.8, 32),
+    };
+  }
+
+  /** Mean of the calculator's humidity formula: its weather terms average to zero. */
+  const humidity = (lat) => clamp(82 - 0.16 * Math.abs(lat), 25, 100);
+
+  /** 24-hour mean of the calculator's irradiance formula at mean cloud cover, W/m². */
+  function solarDailyMean(lat, month) {
+    const rad = Math.PI / 180;
+    const declination = 23.45 * Math.sin(2 * Math.PI * ((284 + MID_DAY[month]) / 365));
+    let sum = 0;
+    for (let h = 0; h < 24; h += 1) {
+      const hourAngle = 15 * (h + 0.5 - 12);
+      const sinElevation =
+        Math.sin(lat * rad) * Math.sin(declination * rad) +
+        Math.cos(lat * rad) * Math.cos(declination * rad) * Math.cos(hourAngle * rad);
+      sum += Math.max(0, sinElevation);
+    }
+    return (sum / 24) * 1090 * 0.68;
+  }
+
+  // Regions are fixed, so each one's twelve monthly means are worked out once.
+  const STATS = new Map(regions.map((r) => [r.id, MONTHS.map((_, m) => {
+    const c = r.lats.map((lat) => climatology(lat, m));
+    const air = c.map((v) => v.air);
+    return {
+      air: mean(air),
+      lo: Math.min(...air),
+      hi: Math.max(...air),
+      sea: mean(c.map((v) => v.sea)),
+      rh: mean(r.lats.map(humidity)),
+      solar: mean(r.lats.map((lat) => solarDailyMean(lat, m))),
+    };
+  })]));
+  const statsFor = (m) => STATS.get(plan[m])[m];
+
+  /** Consecutive months with the same region, January to December. */
+  function runs() {
+    const out = [];
+    plan.forEach((id, m) => {
+      const last = out[out.length - 1];
+      if (last && last.id === id) last.to = m;
+      else out.push({ id, from: m, to: m });
+    });
+    return out;
+  }
+
+  /** "Dec–Mar" for one region, wrapping over the year end. */
+  function monthsLabel(id) {
+    const count = plan.filter((p) => p === id).length;
+    if (count === 12) return 'All year';
+    const active = (m) => plan[((m % 12) + 12) % 12] === id;
+    const parts = [];
+    for (let m = 0; m < 12; m += 1) {
+      if (active(m) && !active(m - 1)) {
+        let end = m;
+        while (active(end + 1)) end += 1;
+        parts.push(end === m ? MON[m] : `${MON[m]}–${MON[end % 12]}`);
+      }
+    }
+    return parts.join(', ');
+  }
+
+  const usedIds = () => plan.filter((id, m) => plan.indexOf(id) === m);
+
+  /** Colours go to the regions in the plan, in order of first appearance; past eight, grey. */
+  function assignColors() {
+    const used = usedIds();
+    regions.forEach((r) => {
+      const i = used.indexOf(r.id);
+      r.color = i >= 0 && i < 8 ? `r${i + 1}` : 'r-extra';
+    });
+  }
+
+  const options = (current) => regions
+    .map((r) => `<option value="${r.id}"${r.id === current ? ' selected' : ''}>${esc(r.name)}</option>`)
+    .join('');
+
+  /* ---------- annual plan ---------- */
+
+  function renderMonths() {
+    $('months').innerHTML = plan
+      .map((id, m) => {
+        const r = byId(id);
+        return `<li><button type="button" class="month-tab${m === month ? ' is-active' : ''}" id="mt-${m}" data-month="${m}"
+          aria-pressed="${m === month}" aria-label="${MONTHS[m]}, ${esc(r.name)}" style="--c:var(--${r.color})">
+          <span class="mon">${MON[m]}</span><span class="code"><span class="swatch"></span>${r.code}</span></button></li>`;
+      })
+      .join('');
+    const s = statsFor(month);
+    $('picker').innerHTML = `<div class="picker-head">
+        <h3>Select region for ${MONTHS[month]}</h3>
+        <dl class="metrics">
+          <div><dt>Air</dt><dd>${fmt(s.air)} <span>°C</span></dd></div>
+          <div><dt>Seawater</dt><dd>${fmt(s.sea)} <span>°C</span></dd></div>
+          <div><dt>Humidity</dt><dd>${fmt(s.rh, 0)} <span>%</span></dd></div>
+          <div><dt>Solar</dt><dd>${fmt(s.solar, 0)} <span>W/m²</span></dd></div>
+        </dl>
+      </div>
+      <div class="region-grid">${regions
+        .map((r) => {
+          const on = r.id === plan[month];
+          const used = plan.includes(r.id);
+          return `<button type="button" class="region-btn${on ? ' is-active' : ''}" id="rg-${r.id}" data-region="${r.id}" aria-pressed="${on}"
+            style="--c:var(--${r.color})"><span class="swatch${used ? '' : ' is-unused'}"></span>${esc(r.name)}</button>`;
+        })
+        .join('')}</div>`;
+    $('regions').innerHTML = usedIds()
+      .map((id) => {
+        const r = byId(id);
+        const count = plan.filter((p) => p === id).length;
+        return `<li style="--c:var(--${r.color})"><span class="swatch"></span>${esc(r.name)}<span class="when">${monthsLabel(id)} · ${count} mo</span></li>`;
+      })
+      .join('');
+  }
+
+  /* ---------- year preview ---------- */
+
+  const measure = document.createElement('canvas').getContext('2d');
+  const textWidth = (t) => {
+    measure.font = '600 12px "Segoe UI", system-ui, sans-serif';
+    return measure.measureText(t).width;
+  };
+
+  function renderChart() {
+    const wrap = $('chart-wrap');
+    const W = Math.max(280, Math.round(wrap.clientWidth));
+    const L = 44;
+    const R = 12;
+    const pw = W - L - R;
+    const bw = pw / 12;
+    const x = (m) => L + bw * (m + 0.5);
+    const stats = plan.map((_, m) => statsFor(m));
+    const range = (keys) => {
+      const v = stats.flatMap((s) => keys.map((k) => s[k]));
+      return [Math.min(...v), Math.max(...v)];
+    };
+
+    // Three small charts share the month axis: one measure per chart, never two scales on one.
+    const [tLo, tHi] = range(['air', 'sea']);
+    const tStep = tHi - tLo > 22 ? 10 : 5;
+    const [hLo, hHi] = range(['rh']);
+    const [, sHi] = range(['solar']);
+    const sStep = sHi > 240 ? 100 : 50;
+    const panels = [
+      { key: 'temp', title: 'Temperature', unit: '°C', height: 170, step: tStep,
+        lo: Math.floor((tLo - 3) / tStep) * tStep, hi: Math.ceil((tHi + 3) / tStep) * tStep },
+      { key: 'rh', title: 'Relative humidity', unit: '%', height: 96, step: 10,
+        lo: Math.floor((hLo - 4) / 10) * 10, hi: Math.ceil((hHi + 4) / 10) * 10 },
+      { key: 'solar', title: 'Solar radiation', unit: 'W/m², 24-hour mean', height: 110, step: sStep,
+        lo: 0, hi: Math.max(sStep, Math.ceil((sHi * 1.15) / sStep) * sStep) },
+    ];
+    let top = 50;
+    panels.forEach((p) => {
+      p.top = top + 26;
+      p.bottom = p.top + p.height;
+      p.y = (v) => p.bottom - ((v - p.lo) / (p.hi - p.lo)) * p.height;
+      top = p.bottom + 14;
+    });
+    const H = top + 16;
+    const [temp, rh, solar] = panels;
+
+    let svg = '';
+    runs().forEach((run) => {
+      const r = byId(run.id);
+      const x0 = L + run.from * bw;
+      const w = (run.to - run.from + 1) * bw;
+      panels.forEach((p) => {
+        svg += `<rect x="${x0.toFixed(1)}" y="${p.top}" width="${w.toFixed(1)}" height="${p.height}" style="fill:var(--${r.color})" opacity="0.07"/>`;
+      });
+      svg += `<rect x="${(x0 + 1).toFixed(1)}" y="30" width="${Math.max(2, w - 2).toFixed(1)}" height="8" rx="4" style="fill:var(--${r.color})"/>`;
+      const label = textWidth(r.name) <= w - 8 ? r.name : textWidth(r.code) <= w - 6 ? r.code : '';
+      if (label) svg += `<text class="t-span" x="${(x0 + w / 2).toFixed(1)}" y="22" text-anchor="middle">${esc(label)}</text>`;
+    });
+
+    panels.forEach((p) => {
+      svg += `<text class="t-title" x="${L}" y="${p.top - 9}">${p.title} <tspan class="t-unit">${p.unit}</tspan></text>`;
+      for (let v = p.lo; v <= p.hi + 0.01; v += p.step) {
+        svg += `<line class="${v === p.lo ? 'g-edge' : 'g-line'}" x1="${L}" x2="${W - R}" y1="${p.y(v).toFixed(1)}" y2="${p.y(v).toFixed(1)}"/>`;
+        svg += `<text class="t-tick" x="${L - 8}" y="${(p.y(v) + 4).toFixed(1)}" text-anchor="end">${fmt(v, 0)}</text>`;
+      }
+    });
+    MON.forEach((name, m) => {
+      svg += `<text class="t-tick" x="${x(m).toFixed(1)}" y="${solar.bottom + 18}" text-anchor="middle">${bw >= 34 ? name : name[0]}</text>`;
+    });
+    svg += `<line id="cross" class="cross" y1="${temp.top}" y2="${solar.bottom}" x1="0" x2="0" visibility="hidden"/>`;
+
+    const path = (p, key) => stats.map((s, m) => `${m ? 'L' : 'M'}${x(m).toFixed(1)} ${p.y(s[key]).toFixed(1)}`).join('');
+    const dots = (p, key) => stats
+      .map((s, m) => `<circle class="dot" cx="${x(m).toFixed(1)}" cy="${p.y(s[key]).toFixed(1)}" r="5" style="fill:var(--${byId(plan[m]).color})"/>`)
+      .join('');
+
+    // Temperature: two lines, dots on air, the two extremes labelled.
+    svg += `<path class="l-sea" d="${path(temp, 'sea')}"/><path class="l-main" d="${path(temp, 'air')}"/>${dots(temp, 'air')}`;
+    const byAir = stats.map((s, m) => ({ s, m }));
+    const max = byAir.reduce((a, b) => (b.s.air > a.s.air ? b : a));
+    const min = byAir.reduce((a, b) => (b.s.air < a.s.air ? b : a));
+    svg += `<text class="t-value" x="${x(max.m).toFixed(1)}" y="${(temp.y(max.s.air) - 11).toFixed(1)}" text-anchor="middle">${fmt(max.s.air)}°</text>`;
+    if (min.m !== max.m) svg += `<text class="t-value" x="${x(min.m).toFixed(1)}" y="${(temp.y(min.s.air) + 19).toFixed(1)}" text-anchor="middle">${fmt(min.s.air)}°</text>`;
+
+    // Humidity: one line with region dots.
+    svg += `<path class="l-main" d="${path(rh, 'rh')}"/>${dots(rh, 'rh')}`;
+
+    // Solar: one bar per month from the zero baseline, rounded at the data end only.
+    const barW = Math.min(24, bw * 0.55);
+    stats.forEach((s, m) => {
+      const yTop = solar.y(s.solar);
+      const h = solar.bottom - yTop;
+      if (h < 0.5) return;
+      const r = Math.min(4, h, barW / 2);
+      const x0 = x(m) - barW / 2;
+      svg += `<path style="fill:var(--${byId(plan[m]).color})" d="M${x0.toFixed(1)} ${solar.bottom}V${(yTop + r).toFixed(1)}q0 ${-r} ${r} ${-r}h${(barW - 2 * r).toFixed(1)}q${r} 0 ${r} ${r}V${solar.bottom}z"/>`;
+    });
+    const peak = stats.map((s, m) => ({ s, m })).reduce((a, b) => (b.s.solar > a.s.solar ? b : a));
+    svg += `<text class="t-value" x="${x(peak.m).toFixed(1)}" y="${(solar.y(peak.s.solar) - 6).toFixed(1)}" text-anchor="middle">${fmt(peak.s.solar, 0)}</text>`;
+
+    const el = $('chart');
+    el.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    el.style.height = `${H}px`;
+    el.innerHTML = svg;
+    chartGeo = { W, L, bw, x, stats };
+  }
+
+  function showTip(event) {
+    if (!chartGeo) return;
+    const { W, L, bw, x, stats } = chartGeo;
+    const box = $('chart').getBoundingClientRect();
+    const px = ((event.clientX - box.left) / box.width) * W;
+    const m = clamp(Math.floor((px - L) / bw), 0, 11);
+    const r = byId(plan[m]);
+    const s = stats[m];
+    const cross = $('cross');
+    cross.setAttribute('x1', x(m));
+    cross.setAttribute('x2', x(m));
+    cross.setAttribute('visibility', 'visible');
+    const tip = $('tip');
+    tip.innerHTML = `<p class="tip-title">${MONTHS[m]}</p>
+      <p class="tip-region" style="--c:var(--${r.color})"><span class="swatch"></span>${esc(r.name)}</p>
+      <dl><div><dt>Air</dt><dd>${fmt(s.air)} °C</dd></div>
+      <div><dt>Across the region</dt><dd>${fmt(s.lo)} to ${fmt(s.hi)} °C</dd></div>
+      <div><dt>Seawater</dt><dd>${fmt(s.sea)} °C</dd></div>
+      <div><dt>Humidity</dt><dd>${fmt(s.rh, 0)} %</dd></div>
+      <div><dt>Solar</dt><dd>${fmt(s.solar, 0)} W/m²</dd></div></dl>`;
+    tip.hidden = false;
+    const scale = box.width / W;
+    if (m < 6) { tip.style.left = `${x(m) * scale + 14}px`; tip.style.right = 'auto'; }
+    else { tip.style.right = `${(W - x(m)) * scale + 14}px`; tip.style.left = 'auto'; }
+  }
+
+  function hideTip() {
+    $('tip').hidden = true;
+    const cross = $('cross');
+    if (cross) cross.setAttribute('visibility', 'hidden');
+  }
+
+  function renderFacts() {
+    const stats = plan.map((_, m) => ({ m, s: statsFor(m) }));
+    const changes = plan.filter((id, m) => id !== plan[(m + 1) % 12]).length;
+    $('change-note').textContent = changes
+      ? `${changes} region change${changes === 1 ? '' : 's'} through the year. The ship switches region at the month boundary; the crossing between regions is not modelled.`
+      : 'One region all year, so the ship never repositions.';
+    const span = (key, digits, unit) => {
+      const lo = stats.reduce((a, b) => (b.s[key] < a.s[key] ? b : a));
+      const hi = stats.reduce((a, b) => (b.s[key] > a.s[key] ? b : a));
+      return [`${fmt(lo.s[key], digits)} to ${fmt(hi.s[key], digits)} ${unit}`, lo.m === hi.m || lo.s[key] === hi.s[key] ? 'Same all year' : `Low ${MON[lo.m]} · high ${MON[hi.m]}`];
+    };
+    const facts = [
+      ['Regions', `${usedIds().length}`, `${changes} change${changes === 1 ? '' : 's'} a year`],
+      ['Air temperature', ...span('air', 1, '°C')],
+      ['Seawater', ...span('sea', 1, '°C')],
+      ['Humidity', ...span('rh', 0, '%')],
+      ['Solar radiation', ...span('solar', 0, 'W/m²')],
+    ];
+    $('facts').innerHTML = facts
+      .map(([label, value, sub]) => `<div class="fact"><dt>${label}</dt><dd>${esc(value)}</dd><dd class="fact-sub">${esc(sub)}</dd></div>`)
+      .join('');
+  }
+
+  /* ---------- updates ---------- */
+
+  function renderAll() {
+    assignColors();
+    renderMonths();
+    renderChart();
+    renderFacts();
+  }
+
+  $('months').addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-month]');
+    if (!tab) return;
+    month = Number(tab.dataset.month);
+    renderMonths();
+    $(`mt-${month}`).focus();
+  });
+
+  $('picker').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-region]');
+    if (!btn) return;
+    plan[month] = btn.dataset.region;
+    $('start-from').value = '';
+    renderAll();
+    $(`rg-${plan[month]}`).focus();
+  });
+
+  $('start-regions').innerHTML = regions.map((r) => `<option value="region:${r.id}">${esc(r.name)}</option>`).join('');
+  $('start-from').addEventListener('change', (e) => {
+    const key = e.target.value;
+    if (!key) return;
+    plan = key.startsWith('region:')
+      ? MONTHS.map(() => key.slice(7))
+      : MONTHS.map((_, m) => PRESETS[key](m));
+    renderAll();
+  });
+
+  const chartWrap = $('chart-wrap');
+  chartWrap.addEventListener('pointermove', showTip);
+  chartWrap.addEventListener('pointerdown', showTip);
+  chartWrap.addEventListener('pointerleave', hideTip);
+
+  renderAll();
+
+  let lastWidth = chartWrap.clientWidth;
+  new ResizeObserver(() => {
+    const w = chartWrap.clientWidth;
+    if (!w || w === lastWidth) return;
+    lastWidth = w;
+    renderChart();
+  }).observe(chartWrap);
+})();
+</script>
+</body>
+</html>

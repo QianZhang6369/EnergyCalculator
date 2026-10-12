@@ -1544,3 +1544,844 @@
     height: 320px;
   }
 }
+
+/* ---------- annual plan (step 2) ---------- */
+
+.plan-head {
+  align-items: flex-end;
+}
+
+.plan-start {
+  flex: 0 1 300px;
+}
+
+.plan-months {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* A month card is tinted with its region's colour, passed in as --region. */
+.plan-month {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--region) 30%, var(--border));
+  background: color-mix(in srgb, var(--region) 12%, var(--surface));
+}
+
+.plan-month .field-input {
+  padding: 7px 9px;
+  font-size: 13.5px;
+}
+
+.plan-month-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.plan-month-number {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--region);
+}
+
+/* Legend keys for the two temperature lines, which are drawn in ink. */
+.plan-key {
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  margin-right: 7px;
+  vertical-align: middle;
+  background: var(--text);
+}
+
+.plan-key-sea {
+  background: var(--text-muted);
+  opacity: 0.75;
+}
+
+.plan-facts {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.year-chart {
+  position: relative;
+  margin-top: 18px;
+}
+
+.year-chart-main {
+  stroke: var(--text);
+}
+
+.year-chart-sea {
+  stroke: var(--text-muted);
+  opacity: 0.75;
+}
+
+.year-chart-span {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--text);
+}
+
+.year-chart-value {
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.year-chart-tip {
+  position: absolute;
+  top: 56px;
+  pointer-events: none;
+  min-width: 190px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+}
+
+.year-chart-tip-region {
+  color: var(--text-muted);
+}
+
+.year-chart-tip dl {
+  margin: 2px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.year-chart-tip dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.year-chart-tip dt {
+  color: var(--text-muted);
+}
+
+.year-chart-tip dd {
+  margin: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Six across only once a card is wide enough for the longest region name. */
+@media (min-width: 1560px) {
+  .plan-months {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .plan-months {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .plan-months {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- room groups (step 1) ---------- */
+
+.zone-list {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.zone-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+}
+
+.zone-card-head,
+.zone-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 14px;
+}
+
+.zone-index {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 5px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.zone-code {
+  flex: 0 1 190px;
+}
+
+.zone-description {
+  flex: 1 1 240px;
+}
+
+.zone-card-head .icon-btn {
+  margin-bottom: 4px;
+}
+
+.zone-small {
+  flex: 0 0 120px;
+}
+
+.zone-mode {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.zone-mode-hint {
+  flex: 1 1 220px;
+  padding-bottom: 9px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.zone-card .table-scroll {
+  margin-top: 0;
+  background: var(--surface);
+}
+
+.zone-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.zone-table th,
+.zone-table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.zone-table thead th {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-alt);
+  vertical-align: bottom;
+}
+
+.zone-table tbody th {
+  font-weight: 500;
+}
+
+.zone-table tbody tr:last-child > *,
+.zone-table tfoot tr > * {
+  border-bottom: none;
+}
+
+.zone-table tfoot tr > * {
+  border-top: 1px solid var(--border-strong);
+  background: var(--surface-alt);
+  font-weight: 600;
+}
+
+.zone-table .zone-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.zone-unit {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.zone-summary .zone-unit {
+  display: inline;
+  margin-left: 8px;
+  font-size: 12.5px;
+}
+
+.zone-table .field-input {
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.zone-number {
+  width: 100%;
+  min-width: 76px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.zone-name {
+  min-width: 130px;
+}
+
+.zone-empty {
+  padding: 18px 8px !important;
+  text-align: center !important;
+  color: var(--text-muted);
+}
+
+.zone-add-room {
+  align-self: flex-start;
+}
+
+.zone-totals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.zone-add {
+  margin-top: 14px;
+}
+
+.zone-summary-title {
+  margin-top: 22px;
+}
+
+/* ---------- air systems (step 4) ---------- */
+
+.air-ahus {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.air-ahus li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+}
+
+.air-ahus .zone-index {
+  margin-bottom: 0;
+}
+
+.air-ahus .field-input {
+  width: 140px;
+  padding: 6px 9px;
+  font-weight: 500;
+}
+
+.air-table-scroll {
+  margin-top: 16px;
+}
+
+.air-table select.field-input {
+  min-width: 118px;
+}
+
+.air-table select.air-method {
+  min-width: 250px;
+}
+
+.air-profile-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.air-profile-cell select.field-input {
+  min-width: 150px;
+}
+
+.air-profile {
+  flex: none;
+  fill: var(--accent);
+}
+
+.air-profile-track {
+  opacity: 0.1;
+}
+
+.air-table .air-unused {
+  color: var(--border-strong);
+}
+
+.air-table .air-design {
+  font-weight: 600;
+}
+
+.air-sizing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.air-sizing strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.air-sizing label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.air-sizing .zone-number {
+  width: 92px;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.air-sizing p {
+  flex-basis: 100%;
+  line-height: 1.55;
+}
+
+/* ---------- design setup (step 3) ---------- */
+
+.design-subtitle {
+  margin: 20px 0 10px;
+}
+
+.design-narrow {
+  width: auto;
+  min-width: min(100%, 460px);
+}
+
+.design-narrow .zone-number {
+  width: 110px;
+}
+
+.design-scalars {
+  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.design-scalars .zone-number {
+  text-align: left;
+}
+
+.design-note {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.design-table-scroll {
+  margin-top: 16px;
+}
+
+.design-table select.field-input {
+  min-width: 118px;
+}
+
+.design-table .design-derived {
+  color: var(--text-muted);
+}
+
+.design-table .design-total {
+  font-weight: 600;
+}
+
+.design-table .design-result-start {
+  border-left: 1px solid var(--border-strong);
+}
+
+/* ---------- results (step 5) ---------- */
+
+.res-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.res-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.res-kpi-label {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.res-kpi-value {
+  margin-top: 4px;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.res-kpi-value span {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* One bar split into the four electricity uses. */
+.res-split {
+  display: flex;
+  height: 10px;
+  margin-top: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-alt);
+}
+
+.res-split i {
+  display: block;
+  height: 100%;
+}
+
+.res-legend {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.res-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.res-swatch {
+  flex: none;
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.res-line-key {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text);
+  opacity: 0.7;
+}
+
+.res-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.res-group {
+  padding-bottom: 8px;
+}
+
+.res-group dl {
+  margin: 10px 0 0;
+}
+
+.res-metric {
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+}
+
+.res-metric dt {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.res-metric dd {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.res-metric dd span {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.res-metric dd.res-metric-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.res-title-unit {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.res-table-scroll {
+  margin-top: 14px;
+}
+
+.res-table th,
+.res-table td {
+  padding: 9px 12px;
+}
+
+.res-table tbody tr:nth-child(even) {
+  background: var(--surface-alt);
+}
+
+.res-table .res-head-group {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.res-table .res-sep {
+  border-left: 1px solid var(--border);
+}
+
+.res-table .res-bold {
+  font-weight: 600;
+}
+
+.res-table .res-muted {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.res-table tr.res-wet {
+  background: #eaf2fd;
+}
+
+.res-table tr.res-wheel-off {
+  background: #e9f7f0;
+}
+
+.res-peak th,
+.res-peak td {
+  padding: 5px 10px;
+}
+
+/* A small bar with its percentage, under a value in a table cell. */
+.res-share {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.res-share span {
+  width: 40px;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.res-share i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #eb6834;
+}
+
+.res-note {
+  margin-top: 12px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.res-notes {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.res-bars {
+  margin-top: 12px;
+}
+
+.res-bars-plot {
+  position: relative;
+  margin-top: 8px;
+}
+
+.res-bars-plot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.res-hover {
+  fill: var(--surface-alt);
+}
+
+.res-line {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  opacity: 0.7;
+}
+
+.res-line-dot {
+  fill: var(--text);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.res-tip {
+  position: absolute;
+  top: 0;
+  z-index: 10;
+  min-width: 190px;
+  padding: 8px 11px;
+  pointer-events: none;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.res-tip strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.res-tip div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.res-tip div span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.res-tip .res-tip-rule {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.res-tip .res-bold {
+  font-weight: 600;
+}
+
+.res-hourly {
+  margin-top: 14px;
+}
+
+.res-hourly-scroll {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.res-hourly-scroll svg {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  height: auto;
+}
+
+.res-frame {
+  fill: none;
+  stroke: var(--border);
+}
+
+.res-zero {
+  stroke: var(--border-strong);
+  stroke-dasharray: 3 3;
+}
+
+.res-hourly-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.res-hourly-controls .field-input {
+  width: 200px;
+  padding: 6px 9px;
+  font-size: 13px;
+}
