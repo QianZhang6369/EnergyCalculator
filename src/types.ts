@@ -84,6 +84,7 @@ export interface WeatherCondition {
 export type DesignParameters = Record<string, string>;
 
 export type SystemLayoutId =
+  | 'simplified-chiller'
   | 'chiller-2way'
   | 'chiller-3way'
   | 'chiller-2way-fc'

@@ -110,6 +110,7 @@ export default function App() {
               air={project.air}
               onAirChange={(change) => update((p) => ({ air: change(p.air) }))}
               reducedOccupancy={project.hvac.params.occupancyReduced}
+              chillerCOP={project.hvac.params.chillerCOP}
             />
           )}
           {step === 4 && (

@@ -1,8 +1,4 @@
-import {
-  SYSTEM_FAMILIES,
-  SYSTEM_LAYOUTS,
-  systemDefaults,
-} from '../data/systems';
+import { SYSTEM_LAYOUTS, getLayout, systemDefaults } from '../data/systems';
 import AirSystems from '../components/AirSystems';
 import SystemSchematic from '../components/figures/SystemSchematic';
 import type { AirSetup } from '../lib/airSystems';
@@ -17,6 +13,8 @@ interface Props {
   onAirChange: (update: (air: AirSetup) => AirSetup) => void;
   /** Step 4 switch that changes what fresh-air method C delivers. */
   reducedOccupancy: boolean;
+  /** Fixed chiller COP of step 4, echoed under the selected configuration. */
+  chillerCOP: number;
 }
 
 export default function Step3AirWaterSystem({
@@ -26,7 +24,10 @@ export default function Step3AirWaterSystem({
   air,
   onAirChange,
   reducedOccupancy,
+  chillerCOP,
 }: Props) {
+  const layout = getLayout(system.layout);
+
   const selectLayout = (id: SystemLayoutId) => {
     // Keep values the user already typed, fill in the new configuration's defaults.
     onChange({
@@ -42,8 +43,7 @@ export default function Step3AirWaterSystem({
         <h2>Air and water system</h2>
         <p>
           Define the air handling units and the air system of each room group, then
-          select the configuration of the chilled water circuit, which drives how pump
-          and compressor energy behave at part load.
+          select the configuration of the chilled water system.
         </p>
       </header>
 
@@ -57,52 +57,51 @@ export default function Step3AirWaterSystem({
       <section className="panel">
         <h3 className="panel-title">System configuration</h3>
         <p className="panel-text">
-          {SYSTEM_LAYOUTS.length} configurations available. Selecting one shows its
-          schematic below.
+          Select the chilled water configuration. Only the simplified chiller is
+          modelled so far: the others can be selected and show their schematic, but
+          the results are calculated as a simplified chiller.
         </p>
 
-        {SYSTEM_FAMILIES.map((family) => {
-          const options = SYSTEM_LAYOUTS.filter((l) => l.family === family);
-          if (options.length === 0) return null;
-          return (
-            <div className="library-group" key={family}>
-              <h4 className="library-group-title">{family}</h4>
-              <ul className="library-list" role="radiogroup" aria-label={family}>
-                {options.map((option) => {
-                  const isSelected = option.id === system.layout;
-                  return (
-                    <li key={option.id}>
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={isSelected}
-                        className={`library-row${isSelected ? ' is-selected' : ''}`}
-                        onClick={() => selectLayout(option.id)}
-                      >
-                        <span className="library-row-main">
-                          <span className="library-row-name">{option.name}</span>
-                          <span className="library-row-tagline">{option.tagline}</span>
-                        </span>
-                        <span className="library-row-check" aria-hidden="true">
-                          ✓
-                        </span>
-                      </button>
-                      {isSelected && (
-                        <div
-                          className={`schematic-frame is-inline${
-                            option.id === 'tems' ? ' is-wide' : ''
-                          }`}
-                        >
-                          <SystemSchematic layout={option.id} />
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+        <div className="config-grid" role="radiogroup" aria-label="System configuration">
+          {SYSTEM_LAYOUTS.map((option) => {
+            const isSelected = option.id === system.layout;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                className={`config-card${isSelected ? ' is-selected' : ''}`}
+                onClick={() => selectLayout(option.id)}
+              >
+                <span className="config-card-family">{option.family}</span>
+                <span className="config-card-name">{option.name}</span>
+                <span className="config-card-tagline">{option.tagline}</span>
+                <span className={`tag${option.modelled ? '' : ' tag-muted'}`}>
+                  {option.modelled ? 'Modelled' : 'Not modelled yet'}
+                </span>
+                <span className="library-row-check config-card-check" aria-hidden="true">
+                  ✓
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {layout && (
+          <div className="config-detail">
+            <h4 className="library-group-title">{layout.name}</h4>
+            <p className="panel-text">
+              {layout.modelled
+                ? 'Chiller electricity = chiller cooling load ÷ COP. Pumps, valves and part-load behaviour are not modelled.'
+                : 'Not modelled yet — the results use the simplified chiller: chiller cooling load ÷ COP.'}{' '}
+              COP {chillerCOP}, set in step 4 (Design parameters).
+            </p>
+            <div className={`schematic-frame${layout.id === 'tems' ? ' is-wide' : ''}`}>
+              <SystemSchematic layout={layout.id} />
             </div>
-          );
-        })}
+          </div>
+        )}
       </section>
     </div>
   );

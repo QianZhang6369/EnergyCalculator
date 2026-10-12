@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ProjectData } from '../types';
 import { designParameterDefaults } from '../data/designParameters';
+import { DEFAULT_LAYOUT } from '../data/systems';
 import { DEFAULT_PLAN, normalizePlan } from '../data/regions';
 import { emptyAirSetup, normalizeAirSetup } from '../lib/airSystems';
 import { emptyHvacDesign, normalizeHvacDesign } from '../lib/hvacDesign';
@@ -17,7 +18,7 @@ const emptyProject = (): ProjectData => ({
   design: designParameterDefaults(),
   hvac: emptyHvacDesign(),
   air: emptyAirSetup(),
-  system: { layout: null, parameters: {} },
+  system: { layout: DEFAULT_LAYOUT, parameters: {} },
 });
 
 const load = (): ProjectData => {
@@ -37,7 +38,12 @@ const load = (): ProjectData => {
       air: normalizeAirSetup(stored.air),
       weather: { plan: normalizePlan(stored.weather?.plan) },
       design: { ...base.design, ...stored.design },
-      system: { ...base.system, ...stored.system },
+      // Projects saved before a configuration was picked fall back to the default.
+      system: {
+        ...base.system,
+        ...stored.system,
+        layout: stored.system?.layout ?? base.system.layout,
+      },
     };
   } catch {
     return emptyProject();

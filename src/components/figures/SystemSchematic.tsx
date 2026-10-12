@@ -183,6 +183,48 @@ const HydraulicCircuit = ({ mode, freeCooling }: CircuitProps) => {
   );
 };
 
+/* ---------- simplified chiller ---------- */
+
+/** The chiller as the calculation sees it: cooling out, electricity in, no hydraulics. */
+const SimplifiedChiller = () => (
+  <svg viewBox={`0 0 ${W} ${H}`} className="system-schematic" role="img" aria-hidden="true">
+    <Defs />
+    <path className="sch-pipe sch-supply" d="M172 224 V 86" />
+    <path className="sch-pipe sch-return" d="M282 86 V 224" />
+
+    <rect x="140" y="40" width="170" height="46" rx="4" className="sch-component" />
+    <text x="225" y="60" textAnchor="middle" className="sch-label sch-label-strong">
+      COOLING LOAD
+    </text>
+    <text x="225" y="76" textAnchor="middle" className="sch-label sch-label-small">
+      AHU coils + terminals
+    </text>
+
+    <rect x="140" y="224" width="170" height="46" rx="4" className="sch-component" />
+    <text x="225" y="244" textAnchor="middle" className="sch-label sch-label-strong">
+      CHILLER
+    </text>
+    <text x="225" y="260" textAnchor="middle" className="sch-label sch-label-small">
+      fixed COP
+    </text>
+
+    <line x1="400" y1="247" x2="314" y2="247" className="sch-line" markerEnd="url(#flow-arrow)" />
+    <text x="408" y="243" className="sch-label sch-label-strong">
+      Electricity
+    </text>
+    <text x="408" y="259" className="sch-label sch-label-small">
+      cooling load ÷ COP
+    </text>
+
+    <text x="164" y="160" textAnchor="end" className="sch-label sch-label-small sch-supply-text">
+      supply
+    </text>
+    <text x="292" y="160" className="sch-label sch-label-small sch-return-text">
+      return
+    </text>
+  </svg>
+);
+
 /* ---------- TEMS plant diagram ---------- */
 
 const TW = 1000;
@@ -344,6 +386,8 @@ const Tems = () => (
 
 export default function SystemSchematic({ layout }: { layout: SystemLayoutId }) {
   switch (layout) {
+    case 'simplified-chiller':
+      return <SimplifiedChiller />;
     case 'chiller-2way':
       return <HydraulicCircuit mode="throttling" freeCooling={false} />;
     case 'chiller-3way':

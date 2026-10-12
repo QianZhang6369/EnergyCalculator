@@ -1,7 +1,7 @@
 import type { ParamField } from './designParameters';
 import type { SystemLayoutId } from '../types';
 
-export type SystemFamily = 'Chilled water' | 'With free cooling' | 'Integrated';
+export type SystemFamily = 'Simplified' | 'Chilled water' | 'With free cooling' | 'Integrated';
 
 export interface SystemLayout {
   id: SystemLayoutId;
@@ -9,6 +9,8 @@ export interface SystemLayout {
   family: SystemFamily;
   /** One-liner under the name in the selection list — the only prose still shown. */
   tagline: string;
+  /** Whether the load calculation models this configuration. Only the simplified chiller is. */
+  modelled: boolean;
   /**
    * Longer prose and pros/cons. Neither is rendered any more: the description
    * above the schematic and the cards below it were both removed. Kept because
@@ -22,6 +24,7 @@ export interface SystemLayout {
 }
 
 export const SYSTEM_FAMILIES: SystemFamily[] = [
+  'Simplified',
   'Chilled water',
   'With free cooling',
   'Integrated',
@@ -41,11 +44,30 @@ const TBC_FIELDS: ParamField[] = [
 /** Equipment selections stored per project. */
 export const PLANT_SELECTION_KEYS = ['chillerId', 'pumpId'] as const;
 
+/** What a new project starts on — the configuration the load calculation models. */
+export const DEFAULT_LAYOUT: SystemLayoutId = 'simplified-chiller';
+
 export const SYSTEM_LAYOUTS: SystemLayout[] = [
+  {
+    id: 'simplified-chiller',
+    name: 'Simplified chiller',
+    family: 'Simplified',
+    modelled: true,
+    tagline: 'Fixed COP',
+    description:
+      'The chiller is reduced to one figure: electricity is the chiller cooling load ' +
+      'divided by a fixed COP. Pumps, valves and part-load behaviour are not modelled.',
+    characteristics: [
+      { label: 'Compressor energy', value: 'Cooling load ÷ fixed COP' },
+      { label: 'Pump energy', value: 'Not modelled' },
+    ],
+    fields: [],
+  },
   {
     id: 'chiller-2way',
     name: 'Chiller + two-way valve',
     family: 'Chilled water',
+    modelled: false,
     tagline: 'Variable flow',
     description:
       'Each air handling unit coil is controlled by a two-way valve. As the valves close, ' +
@@ -63,6 +85,7 @@ export const SYSTEM_LAYOUTS: SystemLayout[] = [
     id: 'chiller-3way',
     name: 'Chiller + three-way valve',
     family: 'Chilled water',
+    modelled: false,
     tagline: 'Constant flow',
     description:
       'Each coil is fitted with a three-way valve that diverts unused water around the coil. ' +
@@ -80,6 +103,7 @@ export const SYSTEM_LAYOUTS: SystemLayout[] = [
     id: 'chiller-2way-fc',
     name: 'Chiller + two-way valve + free cooling',
     family: 'With free cooling',
+    modelled: false,
     tagline: 'Variable flow',
     description:
       'As the two-way arrangement, plus a plate heat exchanger in the return line fed by ' +
@@ -99,6 +123,7 @@ export const SYSTEM_LAYOUTS: SystemLayout[] = [
     id: 'chiller-3way-fc',
     name: 'Chiller + three-way valve + free cooling',
     family: 'With free cooling',
+    modelled: false,
     tagline: 'Constant flow',
     description:
       'As the three-way arrangement, plus a seawater plate heat exchanger in the return ' +
@@ -117,6 +142,7 @@ export const SYSTEM_LAYOUTS: SystemLayout[] = [
     id: 'tems',
     name: 'Thermal energy management system',
     family: 'Integrated',
+    modelled: false,
     tagline: 'Heating and cooling with recovery',
     description:
       'Cooling and heating are served by the same machines. Condenser heat that a chiller ' +
