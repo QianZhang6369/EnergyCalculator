@@ -1,6 +1,3 @@
-import type { DesignParameters, Vessel } from '../types';
-import { designDefaultsFor } from './vesselDefaults';
-
 /**
  * Step 1 — room groups.
  *
@@ -9,8 +6,7 @@ import { designDefaultsFor } from './vesselDefaults';
  * by room and averaged automatically.
  *
  * Ported from EnergyCalculator Light, field names included, so that its
- * per-group load calculation can follow later without a data migration. For
- * now only the group totals are used: see `designFromZones`.
+ * per-group load calculation in `loadCalc.ts` reads them as they are.
  */
 
 export type WindowType = 'Type 1' | 'Type 2';
@@ -213,32 +209,4 @@ export function normalizeZones(zones: unknown): Zone[] {
     averages: { ...emptyMetrics(), ...z.averages },
     rooms: Array.isArray(z.rooms) ? z.rooms : [],
   }));
-}
-
-/**
- * The heat-balance inputs that come from the room groups.
- *
- * The calculation is still one balance for the whole ship, so the groups feed
- * it through their totals: floor area, volume, window and bulkhead area,
- * persons and equipment. What the groups do not carry — exposed deck and shell
- * area, U-values, lighting, occupancy — is still estimated from the vessel
- * type, sized to the groups' total floor area.
- *
- * Not used yet: sunlit window area, air changes, fresh air per person and
- * window type. They wait for the per-group calculation.
- */
-export function designFromZones(vessel: Vessel | null, zones: Zone[]): DesignParameters {
-  const totals = projectTotals(zones);
-  return {
-    ...(vessel ? designDefaultsFor(vessel, totals.area_m2) : {}),
-    conditionedArea: String(totals.area_m2),
-    conditionedVolume: String(totals.volume_m3),
-    windowArea: String(totals.window_m2),
-    exposedBulkheadArea: String(totals.bulkhead_m2),
-    personsOnBoard: String(totals.persons),
-    // The balance takes equipment as a density over the conditioned area.
-    equipmentLoad: String(
-      totals.area_m2 > 0 ? round((totals.equip_kW * 1000) / totals.area_m2, 2) : 0,
-    ),
-  };
 }

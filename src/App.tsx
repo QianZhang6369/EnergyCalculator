@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Stepper, { type StepDefinition } from './components/Stepper';
 import Step1VesselType from './steps/Step1VesselType';
 import Step2WeatherCondition from './steps/Step2WeatherCondition';
@@ -8,9 +8,7 @@ import Step5Results from './steps/Step5Results';
 import { useProject } from './state/useProject';
 import { getVessel } from './data/vessels';
 import { getLayout } from './data/systems';
-import { DESIGN_PARAMETER_GROUPS } from './data/designParameters';
 import { regionsInPlan } from './data/regions';
-import { designFromZones } from './lib/zones';
 import './App.css';
 
 const STEPS: StepDefinition[] = [
@@ -23,17 +21,6 @@ const STEPS: StepDefinition[] = [
 
 const RESULTS_STEP = 5;
 
-/**
- * Indoor set-points and water temperatures of the whole-ship balance. They are
- * no longer edited anywhere, so the balance always runs on their defaults,
- * whatever an older project has stored.
- */
-const FIXED_DESIGN = Object.fromEntries(
-  DESIGN_PARAMETER_GROUPS.filter((g) => g.source === 'user')
-    .flatMap((g) => g.fields)
-    .map((f) => [f.key, f.defaultValue ?? '']),
-);
-
 export default function App() {
   const { project, update, reset } = useProject();
   const [step, setStep] = useState(1);
@@ -42,20 +29,10 @@ export default function App() {
   // removed does not count as a valid selection.
   const vessel = getVessel(project.vesselId);
   const layout = getLayout(project.system.layout);
-  // Areas, persons and equipment come from the room groups; the rest of the
-  // whole-ship balance runs on defaults.
-  const design = useMemo(
-    () => ({ ...project.design, ...FIXED_DESIGN, ...designFromZones(vessel, project.zones) }),
-    [project.design, project.zones, vessel],
-  );
   const regionCount = regionsInPlan(project.weather.plan).length;
 
-  // Step 1 gates the input steps; results additionally need a system configuration.
-  const reachable = (target: number) => {
-    if (target === 1) return true;
-    if (target === RESULTS_STEP) return vessel !== null && layout !== null;
-    return vessel !== null;
-  };
+  // Step 1 gates every other step.
+  const reachable = (target: number) => target === 1 || vessel !== null;
 
   const canContinue = step === 1 ? vessel !== null : true;
 
@@ -145,9 +122,10 @@ export default function App() {
           )}
           {step === RESULTS_STEP && (
             <Step5Results
-              design={design}
+              zones={project.zones}
+              air={project.air}
+              hvac={project.hvac}
               plan={project.weather.plan}
-              layout={project.system.layout}
             />
           )}
         </div>
@@ -168,8 +146,6 @@ export default function App() {
             <button
               type="button"
               className="btn btn-primary"
-              disabled={layout === null}
-              title={layout ? undefined : 'Select a system configuration first'}
               onClick={() => go(RESULTS_STEP)}
             >
               Run calculation →

@@ -280,3 +280,11 @@ export function freshAirBreakdown(
     design_m3h: round1(design),
   };
 }
+
+/** Hourly share of the design persons present. */
+export const occupancyFractions = (profile: OccupancyProfile) =>
+  profileFractions(OCCUPANCY_PROFILES, profile);
+
+/** Hourly share of the installed lighting switched on. */
+export const lightingFractions = (profile: LightingProfile) =>
+  profileFractions(LIGHTING_PROFILES, profile);

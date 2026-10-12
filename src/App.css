@@ -2046,3 +2046,342 @@
 .design-table .design-result-start {
   border-left: 1px solid var(--border-strong);
 }
+
+/* ---------- results (step 5) ---------- */
+
+.res-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.res-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.res-kpi-label {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.res-kpi-value {
+  margin-top: 4px;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.res-kpi-value span {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* One bar split into the four electricity uses. */
+.res-split {
+  display: flex;
+  height: 10px;
+  margin-top: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-alt);
+}
+
+.res-split i {
+  display: block;
+  height: 100%;
+}
+
+.res-legend {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.res-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.res-swatch {
+  flex: none;
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.res-line-key {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text);
+  opacity: 0.7;
+}
+
+.res-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.res-group {
+  padding-bottom: 8px;
+}
+
+.res-group dl {
+  margin: 10px 0 0;
+}
+
+.res-metric {
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+}
+
+.res-metric dt {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.res-metric dd {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.res-metric dd span {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.res-metric dd.res-metric-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.res-title-unit {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.res-table-scroll {
+  margin-top: 14px;
+}
+
+.res-table th,
+.res-table td {
+  padding: 9px 12px;
+}
+
+.res-table tbody tr:nth-child(even) {
+  background: var(--surface-alt);
+}
+
+.res-table .res-head-group {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.res-table .res-sep {
+  border-left: 1px solid var(--border);
+}
+
+.res-table .res-bold {
+  font-weight: 600;
+}
+
+.res-table .res-muted {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.res-table tr.res-wet {
+  background: #eaf2fd;
+}
+
+.res-table tr.res-wheel-off {
+  background: #e9f7f0;
+}
+
+.res-peak th,
+.res-peak td {
+  padding: 5px 10px;
+}
+
+/* A small bar with its percentage, under a value in a table cell. */
+.res-share {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.res-share span {
+  width: 40px;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.res-share i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #eb6834;
+}
+
+.res-note {
+  margin-top: 12px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.res-notes {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.res-bars {
+  margin-top: 12px;
+}
+
+.res-bars-plot {
+  position: relative;
+  margin-top: 8px;
+}
+
+.res-bars-plot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.res-hover {
+  fill: var(--surface-alt);
+}
+
+.res-line {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  opacity: 0.7;
+}
+
+.res-line-dot {
+  fill: var(--text);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.res-tip {
+  position: absolute;
+  top: 0;
+  z-index: 10;
+  min-width: 190px;
+  padding: 8px 11px;
+  pointer-events: none;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.res-tip strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.res-tip div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.res-tip div span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.res-tip .res-tip-rule {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.res-tip .res-bold {
+  font-weight: 600;
+}
+
+.res-hourly {
+  margin-top: 14px;
+}
+
+.res-hourly-scroll {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.res-hourly-scroll svg {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  height: auto;
+}
+
+.res-frame {
+  fill: none;
+  stroke: var(--border);
+}
+
+.res-zero {
+  stroke: var(--border-strong);
+  stroke-dasharray: 3 3;
+}
+
+.res-hourly-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.res-hourly-controls .field-input {
+  width: 200px;
+  padding: 6px 9px;
+  font-size: 13px;
+}

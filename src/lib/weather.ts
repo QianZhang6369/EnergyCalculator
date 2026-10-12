@@ -1,5 +1,5 @@
 import { getRegion, type AnnualPlan, type Region } from '../data/regions';
-import type { HourlyYear } from '../types';
+import type { HourlyYear, WeatherPoint } from '../types';
 
 /**
  * Placeholder weather source.
@@ -159,3 +159,69 @@ export function monthlyMeans(region: Region, month: number): MonthlyMeans {
 /** The twelve monthly means of an annual plan, January first. */
 export const planMeans = (plan: AnnualPlan): MonthlyMeans[] =>
   plan.map((id, month) => monthlyMeans(getRegion(id), month));
+
+const HOURS_PER_YEAR = 8760;
+
+const round = (v: number, d = 1) => {
+  const f = 10 ** d;
+  return Math.round(v * f) / f;
+};
+
+/**
+ * A full year of hourly weather. A region with measured data supplies its own
+ * hour of the year directly; the others are synthetic. Each month the vessel is in the region the
+ * annual plan gives it, moving through that region's latitudes, so climate
+ * follows the plan. The change of region at a month boundary is instant — the
+ * crossing between regions is not modelled.
+ */
+export function generateYear(plan: AnnualPlan, year: number): WeatherPoint[] {
+  const start = Date.UTC(year, 0, 1);
+
+  const waveAir = makeWave();
+  const waveSea = makeWave();
+  const waveRh = makeWave();
+  const waveCloud = makeWave();
+
+  const points: WeatherPoint[] = [];
+  for (let h = 0; h < HOURS_PER_YEAR; h += 1) {
+    const ms = start + h * 3_600_000;
+    const date = new Date(ms);
+
+    const region = getRegion(plan[date.getUTCMonth()]);
+    const lat = regionLatitudeAt(region, h);
+    const lon = region.lon;
+
+    if (region.hourly) {
+      points.push({
+        time: date.toISOString(),
+        lat: round(lat, 3),
+        lon: round(lon, 3),
+        airTemp: region.hourly.airTemp[h],
+        seawaterTemp: region.hourly.seawaterTemp[h],
+        relativeHumidity: region.hourly.relativeHumidity[h],
+        solarRadiation: region.hourly.solarRadiation[h],
+      });
+      continue;
+    }
+
+    const mean = climatology(lat, date.getUTCMonth());
+    const diurnal = 2.4 * Math.sin(2 * Math.PI * ((date.getHours() - 9) / 24));
+    const airAnomaly = diurnal + 3.6 * waveAir(h);
+
+    points.push({
+      time: date.toISOString(),
+      lat: round(lat, 3),
+      lon: round(lon, 3),
+      airTemp: round(clamp(mean.air + airAnomaly, -35, 45)),
+      seawaterTemp: round(clamp(mean.sea + 0.9 * waveSea(h), -1.8, 34)),
+      relativeHumidity: round(
+        clamp(meanHumidity(lat) - 1.4 * airAnomaly + 9 * waveRh(h), 25, 100),
+        0,
+      ),
+      solarRadiation: Math.round(
+        solarIrradiance(lat, lon, date, clamp(MEAN_CLOUD + 0.32 * waveCloud(h), 0.35, 1)),
+      ),
+    });
+  }
+  return points;
+}

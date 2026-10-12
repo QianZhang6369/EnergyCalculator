@@ -211,3 +211,45 @@ export const ahuParamsOf = (design: HvacDesign, ahuId: string): AhuParams => ({
   ...defaultAhuParams(),
   ...design.ahuParams[ahuId],
 });
+
+/**
+ * Outdoor-air handling mode of an AHU:
+ *  - oa100        · 100 % outdoor air, once-through (e.g. galley)
+ *  - oa100_wheel  · 100 % outdoor air with a heat-recovery wheel
+ *  - recirc       · recirculating: minimum fresh air plus return air
+ */
+export type OaMode = 'oa100' | 'oa100_wheel' | 'recirc';
+
+/** The mode follows from the wheel flag and recirculation; recirculation wins. */
+export function ahuOaMode(ahu: Pick<AhuParams, 'hasWheel' | 'recircAir_pct'>): OaMode {
+  if (ahu.recircAir_pct > 0) return 'recirc';
+  return ahu.hasWheel ? 'oa100_wheel' : 'oa100';
+}
+
+export const modeHasWheel = (mode: OaMode) => mode === 'oa100_wheel';
+
+export const modeIsRecirc = (mode: OaMode) => mode === 'recirc';
+
+/**
+ * Supply-air set-point at a given outdoor temperature, ramping linearly from
+ * the cold set-point (at or below the low ramp temperature) to the warm
+ * set-point (at or above the high one).
+ */
+export function supplySetpointAt(
+  oat_C: number,
+  p: Pick<AhuParams, 'winterSetpoint_C' | 'summerSetpoint_C' | 'rampOatLow_C' | 'rampOatHigh_C'>,
+): number {
+  const { winterSetpoint_C: cold, summerSetpoint_C: warm } = p;
+  const lo = p.rampOatLow_C;
+  const hi = p.rampOatHigh_C;
+  if (hi <= lo) return warm;
+  if (oat_C <= lo) return cold;
+  if (oat_C >= hi) return warm;
+  return cold + (warm - cold) * ((oat_C - lo) / (hi - lo));
+}
+
+/** What the load calculation reads: step 3's parameters plus step 4's fan sizing. */
+export type LoadDesign = DesignParams & {
+  terminalFanPercentile: number;
+  terminalFanOversizing: number;
+};
