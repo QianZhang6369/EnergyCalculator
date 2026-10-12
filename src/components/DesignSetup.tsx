@@ -83,7 +83,7 @@ const SCALARS: { key: keyof DesignParams; label: string; unit: string; step: num
 const fixed2 = (n: number) => n.toFixed(2);
 
 /**
- * Step 3 — general design parameters: basic parameters, then the operating,
+ * Step 4 — general design parameters: basic parameters, then the operating,
  * fan and chiller parameters of the air handling units.
  */
 export default function DesignSetup({ zones, air, design, onChange }: Props) {
@@ -119,7 +119,7 @@ export default function DesignSetup({ zones, air, design, onChange }: Props) {
       </th>
     ));
 
-  const noAhus = <p className="library-empty">No AHUs defined. Add AHUs in step 4 first.</p>;
+  const noAhus = <p className="library-empty">No AHUs defined. Add AHUs in step 3 first.</p>;
 
   return (
     <>

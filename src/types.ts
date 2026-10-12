@@ -80,7 +80,7 @@ export interface WeatherCondition {
   plan: AnnualPlan;
 }
 
-/** Step 3 — every value is kept as a string so partially typed input survives. */
+/** Step 4 — every value is kept as a string so partially typed input survives. */
 export type DesignParameters = Record<string, string>;
 
 export type SystemLayoutId =
@@ -90,7 +90,7 @@ export type SystemLayoutId =
   | 'chiller-3way-fc'
   | 'tems';
 
-/** Step 4 */
+/** Step 3 */
 export interface AirWaterSystem {
   layout: SystemLayoutId | null;
   parameters: Record<string, string>;
@@ -103,9 +103,9 @@ export interface ProjectData {
   zones: Zone[];
   weather: WeatherCondition;
   design: DesignParameters;
-  /** Step 3 — room set-points, envelope, AHU and chiller parameters. */
+  /** Step 4 — room set-points, envelope, AHU and chiller parameters. */
   hvac: HvacDesign;
-  /** Step 4 — air handling units and the air system of each room group. */
+  /** Step 3 — air handling units and the air system of each room group. */
   air: AirSetup;
   system: AirWaterSystem;
 }

@@ -1,13 +1,9 @@
 import {
   SYSTEM_FAMILIES,
   SYSTEM_LAYOUTS,
-  getLayout,
   systemDefaults,
 } from '../data/systems';
-import { CHILLERS, PUMPS } from '../data/equipment';
 import AirSystems from '../components/AirSystems';
-import ParameterFields from '../components/ParameterFields';
-import EquipmentSelect from '../components/EquipmentSelect';
 import SystemSchematic from '../components/figures/SystemSchematic';
 import type { AirSetup } from '../lib/airSystems';
 import type { Zone } from '../lib/zones';
@@ -19,11 +15,11 @@ interface Props {
   zones: Zone[];
   air: AirSetup;
   onAirChange: (update: (air: AirSetup) => AirSetup) => void;
-  /** Step 3 switch that changes what fresh-air method C delivers. */
+  /** Step 4 switch that changes what fresh-air method C delivers. */
   reducedOccupancy: boolean;
 }
 
-export default function Step4AirWaterSystem({
+export default function Step3AirWaterSystem({
   system,
   onChange,
   zones,
@@ -31,8 +27,6 @@ export default function Step4AirWaterSystem({
   onAirChange,
   reducedOccupancy,
 }: Props) {
-  const layout = getLayout(system.layout);
-
   const selectLayout = (id: SystemLayoutId) => {
     // Keep values the user already typed, fill in the new configuration's defaults.
     onChange({
@@ -41,9 +35,6 @@ export default function Step4AirWaterSystem({
       parameters: { ...systemDefaults(id), ...system.parameters },
     });
   };
-
-  const setValue = (key: string, value: string) =>
-    onChange({ ...system, parameters: { ...system.parameters, [key]: value } });
 
   return (
     <div className="step-page">
@@ -67,7 +58,7 @@ export default function Step4AirWaterSystem({
         <h3 className="panel-title">System configuration</h3>
         <p className="panel-text">
           {SYSTEM_LAYOUTS.length} configurations available. Selecting one shows its
-          schematic and parameters below.
+          schematic below.
         </p>
 
         {SYSTEM_FAMILIES.map((family) => {
@@ -113,44 +104,6 @@ export default function Step4AirWaterSystem({
           );
         })}
       </section>
-
-      {layout && (
-        <>
-          <section className="panel">
-            <h3 className="panel-title">Plant parameters</h3>
-            <p className="panel-text">
-              Select the chiller and pump from the equipment catalogue. Ratings shown
-              are placeholder data — see <code>src/data/equipment.ts</code>.
-            </p>
-            <div className="field-grid">
-              <EquipmentSelect
-                id="plant-chiller"
-                label="Chiller"
-                items={CHILLERS}
-                value={system.parameters.chillerId ?? ''}
-                onChange={(id) => setValue('chillerId', id)}
-              />
-              <EquipmentSelect
-                id="plant-pump"
-                label="Pump"
-                items={PUMPS}
-                value={system.parameters.pumpId ?? ''}
-                onChange={(id) => setValue('pumpId', id)}
-              />
-            </div>
-          </section>
-
-          <section className="panel">
-            <h3 className="panel-title">{layout.name} — specific parameters</h3>
-            <p className="panel-text">Placeholders — not defined yet.</p>
-            <ParameterFields
-              fields={layout.fields}
-              values={system.parameters}
-              onChange={setValue}
-            />
-          </section>
-        </>
-      )}
     </div>
   );
 }

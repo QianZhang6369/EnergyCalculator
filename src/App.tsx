@@ -2,8 +2,8 @@ import { useState } from 'react';
 import Stepper, { type StepDefinition } from './components/Stepper';
 import Step1VesselType from './steps/Step1VesselType';
 import Step2WeatherCondition from './steps/Step2WeatherCondition';
-import Step3DesignParameters from './steps/Step3DesignParameters';
-import Step4AirWaterSystem from './steps/Step4AirWaterSystem';
+import Step3AirWaterSystem from './steps/Step3AirWaterSystem';
+import Step4DesignParameters from './steps/Step4DesignParameters';
 import Step5Results from './steps/Step5Results';
 import { useProject } from './state/useProject';
 import { getVessel } from './data/vessels';
@@ -14,8 +14,8 @@ import './App.css';
 const STEPS: StepDefinition[] = [
   { id: 1, title: 'Vessel type', subtitle: 'What are we designing for' },
   { id: 2, title: 'Weather condition', subtitle: 'Ambient & route' },
-  { id: 3, title: 'Design parameters', subtitle: 'Loads & set-points' },
-  { id: 4, title: 'Air and water system', subtitle: 'System configuration' },
+  { id: 3, title: 'Air and water system', subtitle: 'System configuration' },
+  { id: 4, title: 'Design parameters', subtitle: 'Loads & set-points' },
   { id: 5, title: 'Results', subtitle: 'Load & energy' },
 ];
 
@@ -103,21 +103,21 @@ export default function App() {
             />
           )}
           {step === 3 && (
-            <Step3DesignParameters
-              zones={project.zones}
-              air={project.air}
-              hvac={project.hvac}
-              onHvacChange={(change) => update((p) => ({ hvac: change(p.hvac) }))}
-            />
-          )}
-          {step === 4 && (
-            <Step4AirWaterSystem
+            <Step3AirWaterSystem
               system={project.system}
               onChange={(system) => update({ system })}
               zones={project.zones}
               air={project.air}
               onAirChange={(change) => update((p) => ({ air: change(p.air) }))}
               reducedOccupancy={project.hvac.params.occupancyReduced}
+            />
+          )}
+          {step === 4 && (
+            <Step4DesignParameters
+              zones={project.zones}
+              air={project.air}
+              hvac={project.hvac}
+              onHvacChange={(change) => update((p) => ({ hvac: change(p.hvac) }))}
             />
           )}
           {step === RESULTS_STEP && (

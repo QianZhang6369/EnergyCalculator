@@ -66,7 +66,7 @@ function HourProfileChart({ fractions, label }: { fractions: number[]; label: st
 }
 
 /**
- * Step 4 — air system configuration: the air handling units, then the air
+ * Step 3 — air system configuration: the air handling units, then the air
  * system of each room group.
  */
 export default function AirSystems({ zones, air, onChange, reducedOccupancy }: Props) {

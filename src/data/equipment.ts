@@ -1,5 +1,5 @@
 /**
- * Equipment catalogue for the plant selection drop-downs in step 4.
+ * Equipment catalogue for the plant selection drop-downs in step 3.
  *
  * PLACEHOLDER DATA. The manufacturer names are deliberately generic and every
  * rating below is invented. Real vendor names are not used here on purpose —
