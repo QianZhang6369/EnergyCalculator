@@ -1544,3 +1544,350 @@
     height: 320px;
   }
 }
+
+/* ---------- annual plan (step 2) ---------- */
+
+.plan-head {
+  align-items: flex-end;
+}
+
+.plan-start {
+  flex: 0 1 300px;
+}
+
+.plan-months {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* A month card is tinted with its region's colour, passed in as --region. */
+.plan-month {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--region) 30%, var(--border));
+  background: color-mix(in srgb, var(--region) 12%, var(--surface));
+}
+
+.plan-month .field-input {
+  padding: 7px 9px;
+  font-size: 13.5px;
+}
+
+.plan-month-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.plan-month-number {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--region);
+}
+
+/* Legend keys for the two temperature lines, which are drawn in ink. */
+.plan-key {
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  margin-right: 7px;
+  vertical-align: middle;
+  background: var(--text);
+}
+
+.plan-key-sea {
+  background: var(--text-muted);
+  opacity: 0.75;
+}
+
+.plan-facts {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.year-chart {
+  position: relative;
+  margin-top: 18px;
+}
+
+.year-chart-main {
+  stroke: var(--text);
+}
+
+.year-chart-sea {
+  stroke: var(--text-muted);
+  opacity: 0.75;
+}
+
+.year-chart-span {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--text);
+}
+
+.year-chart-value {
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.year-chart-tip {
+  position: absolute;
+  top: 56px;
+  pointer-events: none;
+  min-width: 190px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+}
+
+.year-chart-tip-region {
+  color: var(--text-muted);
+}
+
+.year-chart-tip dl {
+  margin: 2px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.year-chart-tip dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.year-chart-tip dt {
+  color: var(--text-muted);
+}
+
+.year-chart-tip dd {
+  margin: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Six across only once a card is wide enough for the longest region name. */
+@media (min-width: 1560px) {
+  .plan-months {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .plan-months {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .plan-months {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- room groups (step 1) ---------- */
+
+.zone-list {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.zone-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+}
+
+.zone-card-head,
+.zone-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 14px;
+}
+
+.zone-index {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 5px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.zone-code {
+  flex: 0 1 190px;
+}
+
+.zone-description {
+  flex: 1 1 240px;
+}
+
+.zone-card-head .icon-btn {
+  margin-bottom: 4px;
+}
+
+.zone-small {
+  flex: 0 0 120px;
+}
+
+.zone-mode {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.zone-mode-hint {
+  flex: 1 1 220px;
+  padding-bottom: 9px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.zone-card .table-scroll {
+  margin-top: 0;
+  background: var(--surface);
+}
+
+.zone-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.zone-table th,
+.zone-table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.zone-table thead th {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-alt);
+  vertical-align: bottom;
+}
+
+.zone-table tbody th {
+  font-weight: 500;
+}
+
+.zone-table tbody tr:last-child > *,
+.zone-table tfoot tr > * {
+  border-bottom: none;
+}
+
+.zone-table tfoot tr > * {
+  border-top: 1px solid var(--border-strong);
+  background: var(--surface-alt);
+  font-weight: 600;
+}
+
+.zone-table .zone-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.zone-unit {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.zone-summary .zone-unit {
+  display: inline;
+  margin-left: 8px;
+  font-size: 12.5px;
+}
+
+.zone-table .field-input {
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.zone-number {
+  width: 100%;
+  min-width: 76px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.zone-name {
+  min-width: 130px;
+}
+
+.zone-empty {
+  padding: 18px 8px !important;
+  text-align: center !important;
+  color: var(--text-muted);
+}
+
+.zone-add-room {
+  align-self: flex-start;
+}
+
+.zone-totals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.zone-add {
+  margin-top: 14px;
+}
+
+.zone-summary-title {
+  margin-top: 22px;
+}

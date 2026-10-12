@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Stepper, { type StepDefinition } from './components/Stepper';
 import Step1VesselType from './steps/Step1VesselType';
 import Step2WeatherCondition from './steps/Step2WeatherCondition';
@@ -8,7 +8,8 @@ import Step5Results from './steps/Step5Results';
 import { useProject } from './state/useProject';
 import { getVessel } from './data/vessels';
 import { getLayout } from './data/systems';
-import { designDefaultsFor } from './lib/vesselDefaults';
+import { regionsInPlan } from './data/regions';
+import { designFromZones } from './lib/zones';
 import './App.css';
 
 const STEPS: StepDefinition[] = [
@@ -29,6 +30,13 @@ export default function App() {
   // removed does not count as a valid selection.
   const vessel = getVessel(project.vesselId);
   const layout = getLayout(project.system.layout);
+  // Areas, persons and equipment come from the room groups; the rest of the
+  // design is what the user set in step 3.
+  const design = useMemo(
+    () => ({ ...project.design, ...designFromZones(vessel, project.zones) }),
+    [project.design, project.zones, vessel],
+  );
+  const regionCount = regionsInPlan(project.weather.plan).length;
 
   // Step 1 gates the input steps; results additionally need a system configuration.
   const reachable = (target: number) => {
@@ -73,11 +81,7 @@ export default function App() {
             <div>
               <dt>Weather</dt>
               <dd>
-                {project.weather.series?.length
-                  ? `${project.weather.series.length} samples`
-                  : project.weather.waypoints?.length
-                    ? `${project.weather.waypoints.length} stops`
-                    : 'Not defined'}
+                {regionCount} region{regionCount === 1 ? '' : 's'}
               </dd>
             </div>
             <div>
@@ -97,31 +101,16 @@ export default function App() {
             <Step1VesselType
               vesselId={project.vesselId}
               projectName={project.projectName}
-              onSelect={(vesselId) =>
-                update((p) => {
-                  const picked = getVessel(vesselId);
-                  // Selecting a vessel refills the vessel-sourced groups in step 3.
-                  return {
-                    vesselId,
-                    design: picked
-                      ? { ...p.design, ...designDefaultsFor(picked) }
-                      : p.design,
-                  };
-                })
-              }
+              onSelect={(vesselId) => update({ vesselId })}
               onProjectNameChange={(projectName) => update({ projectName })}
-              design={project.design}
-              onDesignChange={(design) => update({ design })}
+              zones={project.zones}
+              onZonesChange={(change) => update((p) => ({ zones: change(p.zones) }))}
             />
           )}
           {step === 2 && (
             <Step2WeatherCondition
               weather={project.weather}
-              onChange={(next) =>
-                update((p) => ({
-                  weather: typeof next === 'function' ? next(p.weather) : next,
-                }))
-              }
+              onChange={(weather) => update({ weather })}
             />
           )}
           {step === 3 && (
@@ -138,8 +127,8 @@ export default function App() {
           )}
           {step === RESULTS_STEP && (
             <Step5Results
-              design={project.design}
-              waypoints={project.weather.waypoints ?? []}
+              design={design}
+              plan={project.weather.plan}
               layout={project.system.layout}
             />
           )}

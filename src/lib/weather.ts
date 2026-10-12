@@ -1,92 +1,26 @@
-import type { Waypoint, WeatherPoint } from '../types';
-import { parseStamp } from './itinerary';
+import { getRegion, type AnnualPlan, type Region } from '../data/regions';
+import type { HourlyYear } from '../types';
 
 /**
  * Placeholder weather source.
  *
- * REPLACE ME: `generateProfile` is the single seam for a real weather API. It is
- * already async and produces samples keyed on position + timestamp, so swapping
- * the body for an HTTP call (Open-Meteo, Meteomatics, StormGeo, …) needs no
- * change anywhere else — the chart, the data model and persistence stay as they
- * are.
+ * A region with measured hourly data (`region.hourly`) uses it, both for the
+ * monthly means shown in step 2 and hour by hour in the results. Every other
+ * region falls back to the model below.
  *
- * Until then the values are synthetic: a latitude/season climatology, a diurnal
- * cycle on air temperature, and smooth low-frequency noise so the series looks
- * like a weather profile rather than white noise. They carry no meteorological
- * meaning.
+ * REPLACE ME: the fallback is synthetic. The values come from a
+ * latitude/season climatology, a diurnal cycle on air temperature, and smooth
+ * low-frequency noise so an hourly series looks like weather rather than white
+ * noise. They carry no meteorological meaning. Because the model only knows
+ * latitude and season, warm-water regions read too cool in winter and humidity
+ * does not change with the season. Per-region climate tables (or a weather
+ * API) would replace `climatology`, `meanHumidity` and `MEAN_CLOUD`.
  */
-
-export interface SeriesField {
-  key: 'airTemp' | 'seawaterTemp' | 'relativeHumidity' | 'solarRadiation';
-  label: string;
-  unit: string;
-}
-
-export const SERIES_FIELDS: SeriesField[] = [
-  { key: 'airTemp', label: 'Air temperature', unit: '°C' },
-  { key: 'seawaterTemp', label: 'Seawater temperature', unit: '°C' },
-  { key: 'relativeHumidity', label: 'Relative humidity', unit: '%' },
-  { key: 'solarRadiation', label: 'Solar radiation', unit: 'W/m²' },
-];
-
-export const INTERVAL_OPTIONS = [1, 3, 6] as const;
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
-const round = (v: number, d = 1) => {
-  const f = 10 ** d;
-  return Math.round(v * f) / f;
-};
 
-/**
- * Day-month-hour stamps from step 2 carry no year; `parseStamp` anchors them
- * to a fixed reference year so they still resolve to real instants here.
- */
-const timeOf = parseStamp;
-
-/** First and last instant the itinerary covers, or null if times are missing. */
-export function timeRange(waypoints: Waypoint[]): { start: number; end: number } | null {
-  const stamps = waypoints
-    .flatMap((w) => [timeOf(w.arrival), timeOf(w.departure)])
-    .filter((t): t is number => t !== null);
-  if (stamps.length < 2) return null;
-  const start = Math.min(...stamps);
-  const end = Math.max(...stamps);
-  return end > start ? { start, end } : null;
-}
-
-/**
- * Where the vessel is at time `t`: alongside if within a stop's window,
- * otherwise interpolated along the leg by elapsed fraction.
- */
-export function positionAt(waypoints: Waypoint[], t: number): { lat: number; lon: number } {
-  const first = waypoints[0];
-  for (let i = 0; i < waypoints.length; i += 1) {
-    const wp = waypoints[i];
-    const arrive = timeOf(wp.arrival);
-    const depart = timeOf(wp.departure);
-
-    if (arrive !== null && depart !== null && t >= arrive && t <= depart) {
-      return { lat: wp.lat, lon: wp.lon };
-    }
-
-    const next = waypoints[i + 1];
-    if (!next) continue;
-    const legStart = depart ?? arrive;
-    const legEnd = timeOf(next.arrival) ?? timeOf(next.departure);
-    if (legStart !== null && legEnd !== null && t > legStart && t < legEnd) {
-      const f = (t - legStart) / (legEnd - legStart);
-      return {
-        lat: wp.lat + (next.lat - wp.lat) * f,
-        lon: wp.lon + (next.lon - wp.lon) * f,
-      };
-    }
-  }
-  // Before the first stop or after the last one.
-  const last = waypoints[waypoints.length - 1] ?? first;
-  const firstTime = timeOf(first?.arrival ?? '') ?? timeOf(first?.departure ?? '');
-  if (firstTime !== null && t < firstTime) return { lat: first.lat, lon: first.lon };
-  return { lat: last.lat, lon: last.lon };
-}
+/** Mean fraction of clear-sky irradiance reaching the surface. */
+export const MEAN_CLOUD = 0.68;
 
 /** Sum of three sines — smooth, aperiodic-looking variation over hours. */
 export const makeWave = () => {
@@ -133,92 +67,95 @@ export function climatology(lat: number, month: number) {
   return { air, sea };
 }
 
-function buildSeries(waypoints: Waypoint[], intervalHours: number): WeatherPoint[] {
-  const range = timeRange(waypoints);
-  if (!range) return [];
+/** Mean relative humidity for a latitude, %. Drier towards the poles. */
+export const meanHumidity = (lat: number) => 82 - 0.16 * Math.abs(lat);
 
-  const stepMs = intervalHours * 3_600_000;
-  const count = Math.floor((range.end - range.start) / stepMs) + 1;
-  // Guard against a very long route at a fine interval.
-  const capped = Math.min(count, 2000);
+/** Hours the vessel takes to work through a region's latitudes and back. */
+const REGION_CYCLE_HOURS = 168;
 
-  const waveAir = makeWave();
-  const waveSea = makeWave();
-  const waveRh = makeWave();
-  const waveCloud = makeWave();
+/**
+ * Latitude within a region at a given hour: the vessel moves steadily through
+ * the region's representative latitudes and returns to the first, once a week.
+ */
+export function regionLatitudeAt(region: Region, hour: number): number {
+  const n = region.lats.length;
+  const position = ((hour % REGION_CYCLE_HOURS) / REGION_CYCLE_HOURS) * n;
+  const i = Math.floor(position);
+  const from = region.lats[i % n];
+  const to = region.lats[(i + 1) % n];
+  return from + (to - from) * (position - i);
+}
 
-  const points: WeatherPoint[] = [];
-  for (let i = 0; i < capped; i += 1) {
-    const ms = range.start + i * stepMs;
-    const date = new Date(ms);
-    const hours = i * intervalHours;
-    const { lat, lon } = positionAt(waypoints, ms);
-    const mean = climatology(lat, date.getMonth());
+/** Monthly mean conditions in one region. */
+export interface MonthlyMeans {
+  /**
+   * Air temperature, °C, with its range: the lowest and highest hour of the
+   * month for measured data, the spread across the region's latitudes otherwise.
+   */
+  airTemp: number;
+  airTempLow: number;
+  airTempHigh: number;
+  /** Seawater temperature, °C. */
+  seawaterTemp: number;
+  /** Relative humidity, %. */
+  relativeHumidity: number;
+  /** Solar irradiance averaged over all 24 hours of the day, W/m². */
+  solarRadiation: number;
+}
 
-    // Air: climatology + daily cycle (small at sea) + weather systems.
-    const diurnal = 2.4 * Math.sin(2 * Math.PI * ((date.getHours() - 9) / 24));
-    const airAnomaly = diurnal + 3.6 * waveAir(hours);
-    const airTemp = mean.air + airAnomaly;
+const mean = (values: number[]) => values.reduce((s, v) => s + v, 0) / values.length;
 
-    // Sea: same climatology, far more damped, no daily cycle.
-    const seawaterTemp = clamp(mean.sea + 0.9 * waveSea(hours), -1.8, 34);
-
-    // Humidity moves against the air-temperature anomaly.
-    const relativeHumidity = clamp(
-      82 - 0.16 * Math.abs(lat) - 1.4 * airAnomaly + 9 * waveRh(hours),
-      25,
-      100,
-    );
-
-    // Cloud cover drifts slowly; 0.35 overcast to 1.0 clear.
-    const cloud = clamp(0.68 + 0.32 * waveCloud(hours), 0.35, 1);
-
-    points.push({
-      time: date.toISOString(),
-      lat: round(lat, 3),
-      lon: round(lon, 3),
-      airTemp: round(clamp(airTemp, -35, 45)),
-      seawaterTemp: round(seawaterTemp),
-      relativeHumidity: round(relativeHumidity, 0),
-      solarRadiation: Math.round(solarIrradiance(lat, lon, date, cloud)),
-    });
+/** 24-hour mean irradiance at mid-month under mean cloud cover. */
+function dailyMeanSolar(lat: number, month: number): number {
+  let sum = 0;
+  for (let h = 0; h < 24; h += 1) {
+    // 2001 is not a leap year; longitude 0 so UTC is local solar time.
+    sum += solarIrradiance(lat, 0, new Date(Date.UTC(2001, month, 15, h, 30)), MEAN_CLOUD);
   }
-  return points;
+  return sum / 24;
 }
 
-/** The weather profile over the whole itinerary. */
-export async function generateProfile(
-  waypoints: Waypoint[],
-  intervalHours: number,
-): Promise<WeatherPoint[]> {
-  return buildSeries(waypoints, intervalHours);
+/** First hour of each month in a non-leap year, plus the year end. */
+const MONTH_START_HOUR = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365].map(
+  (day) => day * 24,
+);
+
+/** Monthly means of a measured year, worked out once per region. */
+const measuredMeans = new Map<string, MonthlyMeans[]>();
+
+function measuredMonthlyMeans(region: Region, hourly: HourlyYear): MonthlyMeans[] {
+  const cached = measuredMeans.get(region.id);
+  if (cached) return cached;
+  const months = MONTH_START_HOUR.slice(0, 12).map((start, m) => {
+    const end = MONTH_START_HOUR[m + 1];
+    const air = hourly.airTemp.slice(start, end);
+    return {
+      airTemp: mean(air),
+      airTempLow: Math.min(...air),
+      airTempHigh: Math.max(...air),
+      seawaterTemp: mean(hourly.seawaterTemp.slice(start, end)),
+      relativeHumidity: mean(hourly.relativeHumidity.slice(start, end)),
+      solarRadiation: mean(hourly.solarRadiation.slice(start, end)),
+    };
+  });
+  measuredMeans.set(region.id, months);
+  return months;
 }
 
-export interface ProfileStats {
-  count: number;
-  spanHours: number;
-  airTemp: { min: number; max: number; mean: number };
-  seawaterTemp: { min: number; max: number; mean: number };
-  relativeHumidity: { min: number; max: number; mean: number };
-  solarRadiation: { min: number; max: number; mean: number };
-}
-
-const stat = (values: number[]) => ({
-  min: round(Math.min(...values)),
-  max: round(Math.max(...values)),
-  mean: round(values.reduce((s, v) => s + v, 0) / values.length),
-});
-
-export function summarise(series: WeatherPoint[]): ProfileStats | null {
-  if (series.length === 0) return null;
-  const first = new Date(series[0].time).getTime();
-  const last = new Date(series[series.length - 1].time).getTime();
+export function monthlyMeans(region: Region, month: number): MonthlyMeans {
+  if (region.hourly) return measuredMonthlyMeans(region, region.hourly)[month];
+  const climates = region.lats.map((lat) => climatology(lat, month));
+  const air = climates.map((c) => c.air);
   return {
-    count: series.length,
-    spanHours: Math.round((last - first) / 3_600_000),
-    airTemp: stat(series.map((p) => p.airTemp)),
-    seawaterTemp: stat(series.map((p) => p.seawaterTemp)),
-    relativeHumidity: stat(series.map((p) => p.relativeHumidity)),
-    solarRadiation: stat(series.map((p) => p.solarRadiation)),
+    airTemp: mean(air),
+    airTempLow: Math.min(...air),
+    airTempHigh: Math.max(...air),
+    seawaterTemp: mean(climates.map((c) => c.sea)),
+    relativeHumidity: mean(region.lats.map(meanHumidity)),
+    solarRadiation: mean(region.lats.map((lat) => dailyMeanSolar(lat, month))),
   };
 }
+
+/** The twelve monthly means of an annual plan, January first. */
+export const planMeans = (plan: AnnualPlan): MonthlyMeans[] =>
+  plan.map((id, month) => monthlyMeans(getRegion(id), month));

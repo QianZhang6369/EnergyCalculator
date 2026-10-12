@@ -1,5 +1,13 @@
-import type { DesignParameters, SystemLayoutId, WeatherPoint, Waypoint } from '../types';
-import { climatology, makeWave, positionAt, solarIrradiance, timeRange } from './weather';
+import type { DesignParameters, SystemLayoutId, WeatherPoint } from '../types';
+import { getRegion, type AnnualPlan } from '../data/regions';
+import {
+  MEAN_CLOUD,
+  climatology,
+  makeWave,
+  meanHumidity,
+  regionLatitudeAt,
+  solarIrradiance,
+} from './weather';
 import { calculateLoads, type LoadPoint } from './heatBalance';
 
 /**
@@ -7,9 +15,10 @@ import { calculateLoads, type LoadPoint } from './heatBalance';
  *
  * WHAT IS REAL AND WHAT IS NOT:
  *
- *  - The weather is SYNTHETIC. A full year is generated from the same
- *    latitude/season climatology used in step 2, with the vessel cycling around
- *    its itinerary repeatedly through the year. No forecast data is involved.
+ *  - The weather is measured hour by hour for regions that carry hourly data,
+ *    and SYNTHETIC for the rest. A full year is generated from the same
+ *    latitude/season climatology used in step 2, with the vessel in the region
+ *    the annual plan gives for each month. No forecast data is involved.
  *  - The load profile IS computed, by running the step 3 heat balance against
  *    that synthetic weather at every hour. So the loads follow the design
  *    parameters and the weather, they are not random.
@@ -51,12 +60,13 @@ const round = (v: number, d = 1) => {
 };
 
 /**
- * A full year of synthetic weather. The vessel repeats its itinerary as many
- * times as fits in the year, so position — and therefore climate — varies the
- * way it would in service.
+ * A full year of hourly weather. A region with measured data supplies its own
+ * hour of the year directly; the others are synthetic. Each month the vessel is in the region the
+ * annual plan gives it, moving through that region's latitudes, so climate
+ * follows the plan. The change of region at a month boundary is instant — the
+ * crossing between regions is not modelled.
  */
-export function generateYear(waypoints: Waypoint[], year: number): WeatherPoint[] {
-  const range = timeRange(waypoints);
+export function generateYear(plan: AnnualPlan, year: number): WeatherPoint[] {
   const start = Date.UTC(year, 0, 1);
 
   const waveAir = makeWave();
@@ -69,21 +79,24 @@ export function generateYear(waypoints: Waypoint[], year: number): WeatherPoint[
     const ms = start + h * 3_600_000;
     const date = new Date(ms);
 
-    let lat = 40;
-    let lon = 0;
-    if (range) {
-      // Loop the itinerary through the year.
-      const legMs = range.end - range.start;
-      const phase = ((h * 3_600_000) % legMs) + range.start;
-      const pos = positionAt(waypoints, phase);
-      lat = pos.lat;
-      lon = pos.lon;
-    } else if (waypoints.length > 0) {
-      lat = waypoints[0].lat;
-      lon = waypoints[0].lon;
+    const region = getRegion(plan[date.getUTCMonth()]);
+    const lat = regionLatitudeAt(region, h);
+    const lon = region.lon;
+
+    if (region.hourly) {
+      points.push({
+        time: date.toISOString(),
+        lat: round(lat, 3),
+        lon: round(lon, 3),
+        airTemp: region.hourly.airTemp[h],
+        seawaterTemp: region.hourly.seawaterTemp[h],
+        relativeHumidity: region.hourly.relativeHumidity[h],
+        solarRadiation: region.hourly.solarRadiation[h],
+      });
+      continue;
     }
 
-    const mean = climatology(lat, date.getMonth());
+    const mean = climatology(lat, date.getUTCMonth());
     const diurnal = 2.4 * Math.sin(2 * Math.PI * ((date.getHours() - 9) / 24));
     const airAnomaly = diurnal + 3.6 * waveAir(h);
 
@@ -94,11 +107,11 @@ export function generateYear(waypoints: Waypoint[], year: number): WeatherPoint[
       airTemp: round(clamp(mean.air + airAnomaly, -35, 45)),
       seawaterTemp: round(clamp(mean.sea + 0.9 * waveSea(h), -1.8, 34)),
       relativeHumidity: round(
-        clamp(82 - 0.16 * Math.abs(lat) - 1.4 * airAnomaly + 9 * waveRh(h), 25, 100),
+        clamp(meanHumidity(lat) - 1.4 * airAnomaly + 9 * waveRh(h), 25, 100),
         0,
       ),
       solarRadiation: Math.round(
-        solarIrradiance(lat, lon, date, clamp(0.68 + 0.32 * waveCloud(h), 0.35, 1)),
+        solarIrradiance(lat, lon, date, clamp(MEAN_CLOUD + 0.32 * waveCloud(h), 0.35, 1)),
       ),
     });
   }
@@ -160,11 +173,11 @@ const configTraits = (layout: SystemLayoutId | null) => ({
 
 export function computeResults(
   design: DesignParameters,
-  waypoints: Waypoint[],
+  plan: AnnualPlan,
   layout: SystemLayoutId | null,
   year: number,
 ): ResultsData | null {
-  const weather = generateYear(waypoints, year);
+  const weather = generateYear(plan, year);
   const loadResult = calculateLoads(design, weather, 1);
   if (!loadResult) return null;
 

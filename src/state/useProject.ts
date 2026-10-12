@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ProjectData } from '../types';
 import { designParameterDefaults } from '../data/designParameters';
+import { DEFAULT_PLAN, normalizePlan } from '../data/regions';
+import { normalizeZones, sovSampleZones } from '../lib/zones';
 
 const STORAGE_KEY = 'energy-calculator.project';
 
 const emptyProject = (): ProjectData => ({
   projectName: '',
-  vesselId: null,
-  weather: { waypoints: [], intervalHours: 3, series: [] },
+  // A new project starts as a service operation vessel with its room groups.
+  vesselId: 'sov',
+  zones: sovSampleZones(),
+  weather: { plan: [...DEFAULT_PLAN] },
   design: designParameterDefaults(),
   system: { layout: null, airSystem: null, parameters: {} },
 });
@@ -22,7 +26,10 @@ const load = (): ProjectData => {
     return {
       ...base,
       ...stored,
-      weather: { ...base.weather, ...stored.weather },
+      // Rebuilt rather than merged: projects saved before the annual plan carry
+      // an itinerary here, which is dropped.
+      zones: normalizeZones(stored.zones),
+      weather: { plan: normalizePlan(stored.weather?.plan) },
       design: { ...base.design, ...stored.design },
       system: { ...base.system, ...stored.system },
     };

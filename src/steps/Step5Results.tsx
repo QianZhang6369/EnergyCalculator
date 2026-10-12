@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import ProfileChart, { type ChartPanel } from '../components/ProfileChart';
 import { computeResults } from '../lib/results';
-import type { DesignParameters, SystemLayoutId, Waypoint } from '../types';
+import type { AnnualPlan } from '../data/regions';
+import type { DesignParameters, SystemLayoutId } from '../types';
 
 interface Props {
   design: DesignParameters;
-  waypoints: Waypoint[];
+  plan: AnnualPlan;
   layout: SystemLayoutId | null;
 }
 
@@ -43,16 +44,16 @@ const fmtDate = (iso: string | undefined) =>
 const kwh = (v: number) =>
   v >= 1000 ? `${(v / 1000).toFixed(1)} MWh` : `${v.toFixed(0)} kWh`;
 
-export default function Step5Results({ design, waypoints, layout }: Props) {
+export default function Step5Results({ design, plan, layout }: Props) {
   const year = new Date().getFullYear();
   const [seed, setSeed] = useState(0);
   const [range, setRange] = useState<[number, number]>([0, HOURS_PER_YEAR]);
 
   // `seed` is only here to force a fresh synthetic year on demand.
   const results = useMemo(
-    () => computeResults(design, waypoints, layout, year),
+    () => computeResults(design, plan, layout, year),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [design, waypoints, layout, year, seed],
+    [design, plan, layout, year, seed],
   );
 
   if (!results) {
