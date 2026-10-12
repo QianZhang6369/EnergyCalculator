@@ -1,5 +1,6 @@
 import type { AnnualPlan } from './data/regions';
 import type { AirSetup } from './lib/airSystems';
+import type { HvacDesign } from './lib/hvacDesign';
 import type { Zone } from './lib/zones';
 
 /** Shared data model for the four wizard steps. */
@@ -102,6 +103,8 @@ export interface ProjectData {
   zones: Zone[];
   weather: WeatherCondition;
   design: DesignParameters;
+  /** Step 3 — room set-points, envelope, AHU and chiller parameters. */
+  hvac: HvacDesign;
   /** Step 4 — air handling units and the air system of each room group. */
   air: AirSetup;
   system: AirWaterSystem;

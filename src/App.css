@@ -1996,3 +1996,53 @@
   flex-basis: 100%;
   line-height: 1.55;
 }
+
+/* ---------- design setup (step 3) ---------- */
+
+.design-subtitle {
+  margin: 20px 0 10px;
+}
+
+.design-narrow {
+  width: auto;
+  min-width: min(100%, 460px);
+}
+
+.design-narrow .zone-number {
+  width: 110px;
+}
+
+.design-scalars {
+  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.design-scalars .zone-number {
+  text-align: left;
+}
+
+.design-note {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.design-table-scroll {
+  margin-top: 16px;
+}
+
+.design-table select.field-input {
+  min-width: 118px;
+}
+
+.design-table .design-derived {
+  color: var(--text-muted);
+}
+
+.design-table .design-total {
+  font-weight: 600;
+}
+
+.design-table .design-result-start {
+  border-left: 1px solid var(--border-strong);
+}

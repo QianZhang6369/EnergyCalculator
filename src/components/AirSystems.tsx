@@ -29,6 +29,7 @@ interface Props {
   air: AirSetup;
   /** Takes an updater so quick successive edits cannot clobber each other. */
   onChange: (update: (air: AirSetup) => AirSetup) => void;
+  reducedOccupancy: boolean;
 }
 
 const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -68,7 +69,7 @@ function HourProfileChart({ fractions, label }: { fractions: number[]; label: st
  * Step 4 — air system configuration: the air handling units, then the air
  * system of each room group.
  */
-export default function AirSystems({ zones, air, onChange }: Props) {
+export default function AirSystems({ zones, air, onChange, reducedOccupancy }: Props) {
   const setZoneAir = (zoneUid: string, patch: Partial<ZoneAirConfig>) =>
     onChange((prev) => ({
       ...prev,
@@ -102,7 +103,7 @@ export default function AirSystems({ zones, air, onChange }: Props) {
 
   const rows = zones.map((zone) => {
     const cfg = zoneAirOf(air, zone.uid);
-    return { zone, cfg, fa: freshAirBreakdown(zone, cfg.freshAirMethod) };
+    return { zone, cfg, fa: freshAirBreakdown(zone, cfg.freshAirMethod, reducedOccupancy) };
   });
   const totalDesign = rows.reduce((sum, r) => sum + r.fa.design_m3h, 0);
 

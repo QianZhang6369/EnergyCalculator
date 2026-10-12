@@ -3,6 +3,7 @@ import type { ProjectData } from '../types';
 import { designParameterDefaults } from '../data/designParameters';
 import { DEFAULT_PLAN, normalizePlan } from '../data/regions';
 import { emptyAirSetup, normalizeAirSetup } from '../lib/airSystems';
+import { emptyHvacDesign, normalizeHvacDesign } from '../lib/hvacDesign';
 import { normalizeZones, sovSampleZones } from '../lib/zones';
 
 const STORAGE_KEY = 'energy-calculator.project';
@@ -14,6 +15,7 @@ const emptyProject = (): ProjectData => ({
   zones: sovSampleZones(),
   weather: { plan: [...DEFAULT_PLAN] },
   design: designParameterDefaults(),
+  hvac: emptyHvacDesign(),
   air: emptyAirSetup(),
   system: { layout: null, parameters: {} },
 });
@@ -31,6 +33,7 @@ const load = (): ProjectData => {
       // Rebuilt rather than merged: projects saved before the annual plan carry
       // an itinerary here, which is dropped.
       zones: normalizeZones(stored.zones),
+      hvac: normalizeHvacDesign(stored.hvac),
       air: normalizeAirSetup(stored.air),
       weather: { plan: normalizePlan(stored.weather?.plan) },
       design: { ...base.design, ...stored.design },

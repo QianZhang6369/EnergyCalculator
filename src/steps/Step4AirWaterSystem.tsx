@@ -19,6 +19,8 @@ interface Props {
   zones: Zone[];
   air: AirSetup;
   onAirChange: (update: (air: AirSetup) => AirSetup) => void;
+  /** Step 3 switch that changes what fresh-air method C delivers. */
+  reducedOccupancy: boolean;
 }
 
 export default function Step4AirWaterSystem({
@@ -27,6 +29,7 @@ export default function Step4AirWaterSystem({
   zones,
   air,
   onAirChange,
+  reducedOccupancy,
 }: Props) {
   const layout = getLayout(system.layout);
 
@@ -53,7 +56,12 @@ export default function Step4AirWaterSystem({
         </p>
       </header>
 
-      <AirSystems zones={zones} air={air} onChange={onAirChange} />
+      <AirSystems
+        zones={zones}
+        air={air}
+        onChange={onAirChange}
+        reducedOccupancy={reducedOccupancy}
+      />
 
       <section className="panel">
         <h3 className="panel-title">System configuration</h3>

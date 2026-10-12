@@ -8,6 +8,7 @@ import Step5Results from './steps/Step5Results';
 import { useProject } from './state/useProject';
 import { getVessel } from './data/vessels';
 import { getLayout } from './data/systems';
+import { DESIGN_PARAMETER_GROUPS } from './data/designParameters';
 import { regionsInPlan } from './data/regions';
 import { designFromZones } from './lib/zones';
 import './App.css';
@@ -22,6 +23,17 @@ const STEPS: StepDefinition[] = [
 
 const RESULTS_STEP = 5;
 
+/**
+ * Indoor set-points and water temperatures of the whole-ship balance. They are
+ * no longer edited anywhere, so the balance always runs on their defaults,
+ * whatever an older project has stored.
+ */
+const FIXED_DESIGN = Object.fromEntries(
+  DESIGN_PARAMETER_GROUPS.filter((g) => g.source === 'user')
+    .flatMap((g) => g.fields)
+    .map((f) => [f.key, f.defaultValue ?? '']),
+);
+
 export default function App() {
   const { project, update, reset } = useProject();
   const [step, setStep] = useState(1);
@@ -31,9 +43,9 @@ export default function App() {
   const vessel = getVessel(project.vesselId);
   const layout = getLayout(project.system.layout);
   // Areas, persons and equipment come from the room groups; the rest of the
-  // design is what the user set in step 3.
+  // whole-ship balance runs on defaults.
   const design = useMemo(
-    () => ({ ...project.design, ...designFromZones(vessel, project.zones) }),
+    () => ({ ...project.design, ...FIXED_DESIGN, ...designFromZones(vessel, project.zones) }),
     [project.design, project.zones, vessel],
   );
   const regionCount = regionsInPlan(project.weather.plan).length;
@@ -115,8 +127,10 @@ export default function App() {
           )}
           {step === 3 && (
             <Step3DesignParameters
-              design={project.design}
-              onChange={(design) => update({ design })}
+              zones={project.zones}
+              air={project.air}
+              hvac={project.hvac}
+              onHvacChange={(change) => update((p) => ({ hvac: change(p.hvac) }))}
             />
           )}
           {step === 4 && (
@@ -126,6 +140,7 @@ export default function App() {
               zones={project.zones}
               air={project.air}
               onAirChange={(change) => update((p) => ({ air: change(p.air) }))}
+              reducedOccupancy={project.hvac.params.occupancyReduced}
             />
           )}
           {step === RESULTS_STEP && (
