@@ -2031,6 +2031,16 @@
   color: var(--border-strong);
 }
 
+/* A source fixed by the terminal type, shown in place of its drop-down. */
+.air-table .air-fixed {
+  display: inline-block;
+  min-width: 118px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: help;
+  white-space: nowrap;
+}
+
 .air-table .air-design {
   font-weight: 600;
 }

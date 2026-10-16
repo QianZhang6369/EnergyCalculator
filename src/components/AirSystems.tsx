@@ -11,6 +11,7 @@ import {
   freshAirBreakdown,
   profileAveragePct,
   profileFractions,
+  isElectricCbu,
   zoneAirOf,
   type AirSetup,
   type CoolingSource,
@@ -174,8 +175,8 @@ export default function AirSystems({ zones, air, onChange, reducedOccupancy }: P
                 <th scope="col">Terminal unit</th>
                 <th scope="col">Terminal fan</th>
                 <th scope="col" className="zone-num">Fan W/kW</th>
-                <th scope="col">Heating source</th>
-                <th scope="col">Cooling source</th>
+                <th scope="col">Terminal heating source</th>
+                <th scope="col">Terminal cooling source</th>
                 <th scope="col">Fresh-air method</th>
                 <th scope="col">Occupancy profile</th>
                 <th scope="col" className="zone-num">Lighting W/m²</th>
@@ -261,36 +262,54 @@ export default function AirSystems({ zones, air, onChange, reducedOccupancy }: P
                       />
                     </td>
                     <td>
-                      <select
-                        className="field-input"
-                        aria-label={`${zone.id} heating source`}
-                        value={cfg.terminalHeatSource}
-                        onChange={(e) =>
-                          setZoneAir(zone.uid, { terminalHeatSource: e.target.value as HeatSource })
-                        }
-                      >
-                        {HEAT_SOURCES.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
+                      {isElectricCbu(cfg.terminalUnit) ? (
+                        <span
+                          className="air-fixed"
+                          title="A CBU-EL reheats electrically, so its heating source is always electricity."
+                        >
+                          Electricity
+                        </span>
+                      ) : (
+                        <select
+                          className="field-input"
+                          aria-label={`${zone.id} heating source`}
+                          value={cfg.terminalHeatSource}
+                          onChange={(e) =>
+                            setZoneAir(zone.uid, { terminalHeatSource: e.target.value as HeatSource })
+                          }
+                        >
+                          {HEAT_SOURCES.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </td>
                     <td>
-                      <select
-                        className="field-input"
-                        aria-label={`${zone.id} cooling source`}
-                        value={cfg.terminalCoolSource}
-                        onChange={(e) =>
-                          setZoneAir(zone.uid, { terminalCoolSource: e.target.value as CoolingSource })
-                        }
-                      >
-                        {COOLING_SOURCES.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
+                      {isElectricCbu(cfg.terminalUnit) ? (
+                        <span
+                          className="air-fixed"
+                          title="A CBU-EL has no terminal cooling: the room is cooled by the AHU supply air, whose cooling source is set on the AHU."
+                        >
+                          None
+                        </span>
+                      ) : (
+                        <select
+                          className="field-input"
+                          aria-label={`${zone.id} cooling source`}
+                          value={cfg.terminalCoolSource}
+                          onChange={(e) =>
+                            setZoneAir(zone.uid, { terminalCoolSource: e.target.value as CoolingSource })
+                          }
+                        >
+                          {COOLING_SOURCES.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </td>
                     <td>
                       <select

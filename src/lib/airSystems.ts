@@ -56,6 +56,13 @@ export type CoolingSource = 'Chiller';
 
 export const COOLING_SOURCES: CoolingSource[] = ['Chiller'];
 
+/**
+ * CBU-EL is an electric reheat unit: it cannot cool, so the room is cooled only
+ * by the AHU supply air, and its heating is always electric. CBU-M is left
+ * configurable until it is settled whether it can cool.
+ */
+export const isElectricCbu = (terminal: TerminalUnit) => terminal === 'CBU-EL';
+
 /** How the design fresh-air flow of a room group is derived. */
 export type FreshAirMethod = 'method1' | 'air_change' | 'person' | 'method_c';
 
@@ -205,11 +212,11 @@ export function normalizeAirSetup(stored: Partial<AirSetup> | undefined): AirSet
   };
 }
 
-/** Settings of one group: what is stored, over the defaults. */
-export const zoneAirOf = (air: AirSetup, zoneUid: string): ZoneAirConfig => ({
-  ...defaultZoneAirConfig(),
-  ...air.airConfig[zoneUid],
-});
+/** Settings of one group: what is stored, over the defaults. A CBU-EL always heats electrically. */
+export function zoneAirOf(air: AirSetup, zoneUid: string): ZoneAirConfig {
+  const cfg = { ...defaultZoneAirConfig(), ...air.airConfig[zoneUid] };
+  return isElectricCbu(cfg.terminalUnit) ? { ...cfg, terminalHeatSource: 'Electricity' } : cfg;
+}
 
 export interface FreshAirBreakdown {
   /** Fresh air required on a per-person basis, m³/h. */
